@@ -7,6 +7,7 @@ import MapView from "./components/MapView.vue";
     <header>
       <h1>ARBRE PUBLIC DE MTL</h1>
     </header>
+    <!-- composant MapView.vue, affiche la map et le point de chaque arbres -->
     <MapView />
   </main>
 </template>
