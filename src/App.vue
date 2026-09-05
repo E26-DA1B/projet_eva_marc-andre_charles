@@ -3,14 +3,31 @@ import { computed, onMounted, ref } from "vue";
 import ResumeArbres from "./components/ResumeArbres.vue";
 import { chargerArbres } from "./services/donneesArbres.js";
 import MapView from "./components/MapView.vue";
-import { rechercherParEspece } from "./services/rechercheArbres.js";
+import {
+  rechercherParEspece,
+  filtrerParArrondissement,
+} from "./services/rechercheArbres.js";
 const arbres = ref([]);
 const recherche = ref("");
+const arrondissementSelectionne = ref("");
 
 // recherche automatiquement a chaque lettre entrer
 const arbresFiltres = computed(() => {
-  return rechercherParEspece(arbres.value, recherche.value);
+  const resultatRecherche = rechercherParEspece(arbres.value, recherche.value);
+
+  return filtrerParArrondissement(
+    resultatRecherche,
+    arrondissementSelectionne.value,
+  );
 });
+
+// recherche automatiquement par arondissement, set pour retirer les doublons
+const arrondissements = computed(() => {
+  const liste = arbres.value.map((arbre) => arbre.arrondissement);
+
+  return [...new Set(liste)].sort();
+});
+
 const chargement = ref(true);
 const erreur = ref("");
 async function charger() {
@@ -41,6 +58,19 @@ onMounted(charger);
         type="text"
         placeholder="Ex. érable"
       />
+      <label for="arrondissement">Arrondissement</label>
+
+      <select id="arrondissement" v-model="arrondissementSelectionne">
+        <option value="">Tous les arrondissements</option>
+
+        <option
+          v-for="arrondissement in arrondissements"
+          :key="arrondissement"
+          :value="arrondissement"
+        >
+          {{ arrondissement }}
+        </option>
+      </select>
     </section>
     <section class="resume" aria-label="Statistiques des arbres">
       <p v-if="chargement" role="status">Chargement des statistiques…</p>

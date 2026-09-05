@@ -19,3 +19,13 @@ export function rechercherParEspece(arbres, recherche) {
     return espece.includes(texteRecherche);
   });
 }
+
+export function filtrerParArrondissement(arbres, arrondissement) {
+  if (arrondissement === "") {
+    return arbres;
+  }
+
+  return arbres.filter((arbre) => {
+    return arbre.arrondissement === arrondissement;
+  });
+}
