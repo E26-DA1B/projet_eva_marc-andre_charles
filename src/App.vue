@@ -6,18 +6,27 @@ import MapView from "./components/MapView.vue";
 import {
   rechercherParEspece,
   filtrerParArrondissement,
+  filtrerParDiametre,
 } from "./services/rechercheArbres.js";
 const arbres = ref([]);
 const recherche = ref("");
 const arrondissementSelectionne = ref("");
+const diametreMin = ref("");
+const diametreMax = ref("");
 
 // recherche automatiquement a chaque lettre entrer
 const arbresFiltres = computed(() => {
   const resultatRecherche = rechercherParEspece(arbres.value, recherche.value);
 
-  return filtrerParArrondissement(
+  const resultatArrondissement = filtrerParArrondissement(
     resultatRecherche,
     arrondissementSelectionne.value,
+  );
+
+  return filtrerParDiametre(
+    resultatArrondissement,
+    diametreMin.value,
+    diametreMax.value,
   );
 });
 
@@ -71,6 +80,23 @@ onMounted(charger);
           {{ arrondissement }}
         </option>
       </select>
+      <label for="diametre-min">Diamètre minimum</label>
+      <input
+        id="diametre-min"
+        v-model="diametreMin"
+        type="number"
+        min="0"
+        placeholder="Ex. 20"
+      />
+
+      <label for="diametre-max">Diamètre maximum</label>
+      <input
+        id="diametre-max"
+        v-model="diametreMax"
+        type="number"
+        min="0"
+        placeholder="Ex. 50"
+      />
     </section>
     <section class="resume" aria-label="Statistiques des arbres">
       <p v-if="chargement" role="status">Chargement des statistiques…</p>

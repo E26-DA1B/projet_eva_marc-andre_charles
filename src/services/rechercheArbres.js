@@ -29,3 +29,21 @@ export function filtrerParArrondissement(arbres, arrondissement) {
     return arbre.arrondissement === arrondissement;
   });
 }
+
+export function filtrerParDiametre(arbres, diametreMin, diametreMax) {
+  return arbres.filter((arbre) => {
+    if (arbre.diametre == null) {
+      return diametreMin === "" && diametreMax === "";
+    }
+
+    if (diametreMin !== "" && arbre.diametre < Number(diametreMin)) {
+      return false;
+    }
+
+    if (diametreMax !== "" && arbre.diametre > Number(diametreMax)) {
+      return false;
+    }
+
+    return true;
+  });
+}
