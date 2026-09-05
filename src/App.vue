@@ -7,12 +7,14 @@ import {
   rechercherParEspece,
   filtrerParArrondissement,
   filtrerParDiametre,
+  trierArbres,
 } from "./services/rechercheArbres.js";
 const arbres = ref([]);
 const recherche = ref("");
 const arrondissementSelectionne = ref("");
 const diametreMin = ref("");
 const diametreMax = ref("");
+const triSelectionne = ref("");
 
 // recherche automatiquement a chaque lettre entrer
 const arbresFiltres = computed(() => {
@@ -23,11 +25,13 @@ const arbresFiltres = computed(() => {
     arrondissementSelectionne.value,
   );
 
-  return filtrerParDiametre(
+  const resultatDiametre = filtrerParDiametre(
     resultatArrondissement,
     diametreMin.value,
     diametreMax.value,
   );
+
+  return trierArbres(resultatDiametre, triSelectionne.value);
 });
 
 // recherche automatiquement par arondissement, set pour retirer les doublons
@@ -97,6 +101,15 @@ onMounted(charger);
         min="0"
         placeholder="Ex. 50"
       />
+
+      <label for="tri">Trier par</label>
+      <select id="tri" v-model="triSelectionne">
+        <option value="">Aucun tri</option>
+        <option value="espece-az">Espèce A à Z</option>
+        <option value="espece-za">Espèce Z à A</option>
+        <option value="diametre-croissant">Diamètre croissant</option>
+        <option value="diametre-decroissant">Diamètre décroissant</option>
+      </select>
     </section>
     <section class="resume" aria-label="Statistiques des arbres">
       <p v-if="chargement" role="status">Chargement des statistiques…</p>
