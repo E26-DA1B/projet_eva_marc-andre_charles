@@ -1,9 +1,16 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import ResumeArbres from "./components/ResumeArbres.vue";
 import { chargerArbres } from "./services/donneesArbres.js";
 import MapView from "./components/MapView.vue";
+import { rechercherParEspece } from "./services/rechercheArbres.js";
 const arbres = ref([]);
+const recherche = ref("");
+
+// recherche automatiquement a chaque lettre entrer
+const arbresFiltres = computed(() => {
+  return rechercherParEspece(arbres.value, recherche.value);
+});
 const chargement = ref(true);
 const erreur = ref("");
 async function charger() {
@@ -25,6 +32,16 @@ onMounted(charger);
     <header>
       <h1>ARBRE PUBLIC DE MTL</h1>
     </header>
+    <section class="recherche">
+      <label for="recherche-espece">Rechercher une espèce</label>
+
+      <input
+        id="recherche-espece"
+        v-model="recherche"
+        type="text"
+        placeholder="Ex. érable"
+      />
+    </section>
     <section class="resume" aria-label="Statistiques des arbres">
       <p v-if="chargement" role="status">Chargement des statistiques…</p>
       <div v-else-if="erreur" role="alert">
@@ -39,7 +56,7 @@ onMounted(charger);
       </template>
     </section>
     <!-- composant MapView.vue, affiche la map et le point de chaque arbres -->
-    <MapView />
+    <MapView :arbres="arbresFiltres" />
   </main>
 </template>
 
