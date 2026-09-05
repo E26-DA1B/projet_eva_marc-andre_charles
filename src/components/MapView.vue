@@ -12,7 +12,7 @@ let map = null;
 
 function chargerArbres() {
   // Lecture du csv avec les titres de colonnes comme nom de propriete + les chiffres en string convertie en nombres
-  Papa.parse("/data/arbres-publics.csv", {
+  Papa.parse("/data/arbres-test.csv", {
     download: true,
     header: true,
     dynamicTyping: true,
