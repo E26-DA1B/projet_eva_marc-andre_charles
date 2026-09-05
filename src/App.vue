@@ -34,6 +34,11 @@ const arbresFiltres = computed(() => {
   return trierArbres(resultatDiametre, triSelectionne.value);
 });
 
+// calcule le nombre de resultat
+const nombreResultats = computed(() => {
+  return arbresFiltres.value.length;
+});
+
 // recherche automatiquement par arondissement, set pour retirer les doublons
 const arrondissements = computed(() => {
   const liste = arbres.value.map((arbre) => arbre.arrondissement);
@@ -110,6 +115,8 @@ onMounted(charger);
         <option value="diametre-croissant">Diamètre croissant</option>
         <option value="diametre-decroissant">Diamètre décroissant</option>
       </select>
+
+      <p>{{ nombreResultats }} arbre(s) trouvé(s)</p>
     </section>
     <section class="resume" aria-label="Statistiques des arbres">
       <p v-if="chargement" role="status">Chargement des statistiques…</p>
@@ -117,7 +124,7 @@ onMounted(charger);
         {{ erreur }} <button type="button" @click="charger">Réessayer</button>
       </div>
       <template v-else>
-        <ResumeArbres :arbres="arbres" />
+        <ResumeArbres :arbres="arbresFiltres" />
         <p>
           Statistiques de l’échantillon fourni. Les diamètres absents sont
           exclus de la moyenne.
