@@ -34,10 +34,26 @@ function convertirEnGeoJson(arbres) {
           essenceLatin: arbre.essenceLatin,
           arrondissement: arbre.arrondissement,
           diametre: arbre.diametre,
+          couleur: couleurPourEspece(arbre.essenceFr),
         },
       };
     }),
   };
+}
+
+// retourne toujours la meme couleur pour une meme espece
+function couleurPourEspece(espece) {
+  let nombre = 0;
+
+  for (let i = 0; i < espece.length; i++) {
+    //transforme le nom exemple erables en nombre
+    nombre += espece.charCodeAt(i);
+  }
+
+  //prend se nombre pour choisir une couleur dans une roue de couleur de 360 degre
+  const teinte = (nombre * 47) % 360;
+
+  return `hsl(${teinte}, 65%, 42%)`;
 }
 
 // lancer seulement lorsque la balise html existe
@@ -65,10 +81,22 @@ onMounted(() => {
       source: "arbres",
 
       paint: {
-        "circle-radius": 5,
-        "circle-color": "#168c45",
+        //change la grosseur avec 3 different zoom
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10,
+          3,
+          14,
+          6,
+          18,
+          9,
+        ],
+        "circle-color": ["to-color", ["get", "couleur"]],
         "circle-stroke-width": 1,
         "circle-stroke-color": "#ffffff",
+        "circle-opacity": 0.85,
       },
     });
   });
