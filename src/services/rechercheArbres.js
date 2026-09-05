@@ -81,3 +81,24 @@ export function trierArbres(arbres, tri) {
 
   return copie;
 }
+
+
+//auto completion pour les nom d'arbres
+export function obtenirSuggestionsEspeces(arbres, recherche) {
+  if (recherche.trim() === "") {
+    return [];
+  }
+
+  const texteRecherche = normaliser(recherche);
+
+  const especes = arbres
+    .map((arbre) => arbre.essenceFr)
+    .filter((espece) => {
+      return normaliser(espece).includes(texteRecherche);
+    });
+
+  return [...new Set(especes)]
+    .sort()
+    //8 suggestion maximum
+    .slice(0, 8);
+}

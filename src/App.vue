@@ -8,6 +8,7 @@ import {
   filtrerParArrondissement,
   filtrerParDiametre,
   trierArbres,
+  obtenirSuggestionsEspeces,
 } from "./services/rechercheArbres.js";
 const arbres = ref([]);
 const recherche = ref("");
@@ -15,6 +16,7 @@ const arrondissementSelectionne = ref("");
 const diametreMin = ref("");
 const diametreMax = ref("");
 const triSelectionne = ref("");
+const afficherSuggestions = ref(false);
 
 // recherche automatiquement a chaque lettre entrer
 const arbresFiltres = computed(() => {
@@ -33,6 +35,17 @@ const arbresFiltres = computed(() => {
 
   return trierArbres(resultatDiametre, triSelectionne.value);
 });
+
+// autocompletion en temps reel
+const suggestionsEspeces = computed(() => {
+  return obtenirSuggestionsEspeces(arbres.value, recherche.value);
+});
+
+// mets la suggestion comme valeur de recherche
+function selectionnerSuggestion(suggestion) {
+  recherche.value = suggestion;
+  afficherSuggestions.value = false;
+}
 
 // calcule le nombre de resultat
 const nombreResultats = computed(() => {
@@ -99,12 +112,30 @@ onMounted(charger);
           <div class="contenu-bloc">
             <label for="recherche-espece"> Espèce </label>
 
-            <input
-              id="recherche-espece"
-              v-model="recherche"
-              type="text"
-              placeholder="Ex. érable"
-            />
+            <div class="champ-espece">
+              <input
+                id="recherche-espece"
+                v-model="recherche"
+                type="text"
+                placeholder="Ex. érable"
+                @focus="afficherSuggestions = true"
+                @input="afficherSuggestions = true"
+                @blur="afficherSuggestions = false"
+              />
+
+              <ul
+                v-if="afficherSuggestions && suggestionsEspeces.length > 0"
+                class="suggestions"
+              >
+                <li
+                  v-for="suggestion in suggestionsEspeces"
+                  :key="suggestion"
+                  @mousedown.prevent="selectionnerSuggestion(suggestion)"
+                >
+                  {{ suggestion }}
+                </li>
+              </ul>
+            </div>
 
             <label for="arrondissement"> Arrondissement </label>
 
@@ -356,6 +387,37 @@ select {
   color: #7a8880;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.champ-espece {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  background: white;
+  border: 1px solid #ccd7cf;
+  border-radius: 7px;
+  box-shadow: 0 4px 10px rgba(24, 63, 50, 0.12);
+}
+
+.suggestions li {
+  padding: 9px 10px;
+  cursor: pointer;
+  color: #27372f;
+  font-size: 13px;
+}
+
+.suggestions li:hover {
+  background: #edf4ef;
+  color: #285f46;
 }
 
 /* cell */
