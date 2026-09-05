@@ -63,76 +63,115 @@ onMounted(charger);
 </script>
 
 <template>
-  <main>
-    <header>
-      <h1>ARBRE PUBLIC DE MTL</h1>
-    </header>
-    <section class="recherche">
-      <label for="recherche-espece">Rechercher une espèce</label>
-
-      <input
-        id="recherche-espece"
-        v-model="recherche"
-        type="text"
-        placeholder="Ex. érable"
-      />
-      <label for="arrondissement">Arrondissement</label>
-
-      <select id="arrondissement" v-model="arrondissementSelectionne">
-        <option value="">Tous les arrondissements</option>
-
-        <option
-          v-for="arrondissement in arrondissements"
-          :key="arrondissement"
-          :value="arrondissement"
-        >
-          {{ arrondissement }}
-        </option>
-      </select>
-      <label for="diametre-min">Diamètre minimum</label>
-      <input
-        id="diametre-min"
-        v-model="diametreMin"
-        type="number"
-        min="0"
-        placeholder="Ex. 20"
-      />
-
-      <label for="diametre-max">Diamètre maximum</label>
-      <input
-        id="diametre-max"
-        v-model="diametreMax"
-        type="number"
-        min="0"
-        placeholder="Ex. 50"
-      />
-
-      <label for="tri">Trier par</label>
-      <select id="tri" v-model="triSelectionne">
-        <option value="">Aucun tri</option>
-        <option value="espece-az">Espèce A à Z</option>
-        <option value="espece-za">Espèce Z à A</option>
-        <option value="diametre-croissant">Diamètre croissant</option>
-        <option value="diametre-decroissant">Diamètre décroissant</option>
-      </select>
-
-      <p>{{ nombreResultats }} arbre(s) trouvé(s)</p>
-    </section>
-    <section class="resume" aria-label="Statistiques des arbres">
-      <p v-if="chargement" role="status">Chargement des statistiques…</p>
-      <div v-else-if="erreur" role="alert">
-        {{ erreur }} <button type="button" @click="charger">Réessayer</button>
+  <main class="application">
+    <header class="entete">
+      <div>
+        <h1>ARBREAL</h1>
+        <p>Les arbres publics de Montréal</p>
       </div>
-      <template v-else>
-        <ResumeArbres :arbres="arbresFiltres" />
-        <p>
-          Statistiques de l’échantillon fourni. Les diamètres absents sont
-          exclus de la moyenne.
-        </p>
-      </template>
-    </section>
-    <!-- composant MapView.vue, affiche la map et le point de chaque arbres -->
-    <MapView :arbres="arbresFiltres" />
+    </header>
+
+    <div class="contenu">
+      <!-- PANNEAU GAUCHE -->
+      <section class="panneau-gauche">
+        <div class="resume">
+          <p v-if="chargement" role="status">Chargement des statistiques…</p>
+
+          <div v-else-if="erreur" role="alert">
+            {{ erreur }}
+            <button type="button" @click="charger">Réessayer</button>
+          </div>
+
+          <ResumeArbres v-else :arbres="arbresFiltres" />
+        </div>
+
+        <div class="zone-map">
+          <MapView :arbres="arbresFiltres" />
+        </div>
+      </section>
+
+      <!-- PANNEAU DROIT -->
+      <aside class="panneau-droit">
+        <!-- RECHERCHE -->
+        <section class="bloc recherche">
+          <div class="titre-bloc">Recherche</div>
+
+          <div class="contenu-bloc">
+            <label for="recherche-espece"> Espèce </label>
+
+            <input
+              id="recherche-espece"
+              v-model="recherche"
+              type="text"
+              placeholder="Ex. érable"
+            />
+
+            <label for="arrondissement"> Arrondissement </label>
+
+            <select id="arrondissement" v-model="arrondissementSelectionne">
+              <option value="">Tous les arrondissements</option>
+
+              <option
+                v-for="arrondissement in arrondissements"
+                :key="arrondissement"
+                :value="arrondissement"
+              >
+                {{ arrondissement }}
+              </option>
+            </select>
+
+            <div class="diametres">
+              <div>
+                <label for="diametre-min"> Diamètre min. </label>
+
+                <input
+                  id="diametre-min"
+                  v-model="diametreMin"
+                  type="number"
+                  min="0"
+                  placeholder="20"
+                />
+              </div>
+
+              <div>
+                <label for="diametre-max"> Diamètre max. </label>
+
+                <input
+                  id="diametre-max"
+                  v-model="diametreMax"
+                  type="number"
+                  min="0"
+                  placeholder="50"
+                />
+              </div>
+            </div>
+
+            <label for="tri"> Trier par </label>
+
+            <select id="tri" v-model="triSelectionne">
+              <option value="">Aucun tri</option>
+              <option value="espece-az">Espèce A à Z</option>
+              <option value="espece-za">Espèce Z à A</option>
+              <option value="diametre-croissant">Diamètre croissant</option>
+              <option value="diametre-decroissant">Diamètre décroissant</option>
+            </select>
+
+            <p class="resultats">{{ nombreResultats }} résultat(s)</p>
+          </div>
+        </section>
+
+        <!-- FUTURE FICHE D'ARBRE -->
+        <section class="bloc fiche-arbre">
+          <div class="titre-bloc">Information sur l'arbre</div>
+
+          <div class="contenu-bloc zone-fiche">
+            <p>
+              Sélectionnez un arbre sur la carte pour afficher ses informations.
+            </p>
+          </div>
+        </section>
+      </aside>
+    </div>
   </main>
 </template>
 
@@ -150,34 +189,183 @@ body,
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: Inter, Arial, sans-serif;
+
+  background: #eef2ee;
+  color: #25332c;
 }
 
-main {
+button,
+input,
+select {
+  font: inherit;
+}
+
+.application {
   display: grid;
-  grid-template-rows: 60px auto auto minmax(320px, 1fr);
+  grid-template-rows: 64px 1fr;
+
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
-header {
+.entete {
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
+  background: #183f32;
   color: white;
-  background-color: #176b3a;
+  border-bottom: 1px solid #2d5849;
 }
 
-h1 {
+.entete h1 {
   margin: 0;
   font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
+
+.entete p {
+  margin: 2px 0 0;
+  color: #bfd1c7;
+  font-size: 12px;
+}
+
+.contenu {
+  display: grid;
+  grid-template-columns: minmax(0, 72%) minmax(280px, 28%);
+  min-height: 0;
+}
+
+.panneau-gauche {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid #d6ded8;
+}
+
 .resume {
-  padding: 0 20px;
-  background: #f4f7f2;
+  padding: 12px 18px;
+  background: #f7f9f6;
+  border-bottom: 1px solid #d8e0da;
 }
-.resume p {
-  color: #586c5d;
+
+.zone-map {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panneau-droit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 280px;
+  min-height: 0;
+  padding: 14px;
+  overflow-y: auto;
+  background: #edf2ee;
+}
+
+.bloc {
+  overflow: hidden;
+  background: white;
+  border: 1px solid #d6dfd8;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(24, 63, 50, 0.06);
+}
+
+.titre-bloc {
+  padding: 14px 16px;
+  color: #244b3c;
+  font-size: 14px;
+  font-weight: 700;
+  background: #f9fbf9;
+  border-bottom: 1px solid #e2e8e3;
+}
+
+.contenu-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+}
+
+.contenu-bloc label {
+  margin-top: 3px;
+  color: #596b61;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.contenu-bloc input,
+.contenu-bloc select {
+  width: 100%;
+  padding: 9px 10px;
+  color: #27372f;
+  background: #fbfcfb;
+  border: 1px solid #ccd7cf;
+  border-radius: 7px;
+  outline: none;
+}
+
+.contenu-bloc input:focus,
+.contenu-bloc select:focus {
+  border-color: #4c8065;
+  box-shadow: 0 0 0 2px rgba(76, 128, 101, 0.12);
+}
+
+.diametres {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.diametres > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resultats {
+  margin: 8px 0 0;
+  padding-top: 12px;
+  color: #285f46;
   font-size: 13px;
+  font-weight: 700;
+  border-top: 1px solid #e2e8e3;
+}
+
+.recherche {
+  flex-shrink: 0;
+}
+
+.fiche-arbre {
+  flex: 1;
+  min-height: 180px;
+}
+
+.zone-fiche {
+  min-height: 150px;
+}
+
+.zone-fiche p {
+  margin: 0;
+
+  color: #7a8880;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* cell */
+@media (max-width: 850px) {
+  .contenu {
+    grid-template-columns: 1fr;
+  }
+
+  .panneau-droit {
+    display: none;
+  }
 }
 </style>
