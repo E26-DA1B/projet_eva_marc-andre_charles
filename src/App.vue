@@ -79,7 +79,7 @@ body {
 
 main {
   display: grid;
-  grid-template-rows: 60px auto minmax(320px, 1fr);
+  grid-template-rows: 60px auto auto minmax(320px, 1fr);
   width: 100%;
   height: 100%;
 }
