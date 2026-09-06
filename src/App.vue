@@ -1,90 +1,59 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import ResumeArbres from "./components/ResumeArbres.vue";
-import { chargerArbres } from "./services/donneesArbres.js";
-import MapView from "./components/MapView.vue";
-const arbres = ref([]);
-const chargement = ref(true);
-const erreur = ref("");
-async function charger() {
-  chargement.value = true;
-  erreur.value = "";
-  try {
-    arbres.value = await chargerArbres();
-  } catch (e) {
-    erreur.value = e.message;
-  } finally {
-    chargement.value = false;
-  }
-}
-onMounted(charger);
+import { onMounted } from "vue";
+import { arbresService } from "./services/arbresService";
+import {
+  notification,
+  effacerNotification,
+} from "./services/notificationService";
+import MessageEtat from "./components/MessageEtat.vue";
+const etat = arbresService.etat;
+onMounted(arbresService.initialiser);
 </script>
 
 <template>
-  <main>
-    <header>
-      <h1>ARBRE PUBLIC DE MTL</h1>
-    </header>
-    <section class="resume" aria-label="Statistiques des arbres">
-      <p v-if="chargement" role="status">Chargement des statistiques…</p>
-      <div v-else-if="erreur" role="alert">
-        {{ erreur }} <button type="button" @click="charger">Réessayer</button>
+  <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+  <header class="entete">
+    <div class="marque">
+      <span aria-hidden="true">♧</span>
+      <div>
+        Arbres de Montréal<small>Explorer et suivre la forêt urbaine</small>
       </div>
-      <template v-else>
-        <ResumeArbres :arbres="arbres" />
-        <p>
-          Statistiques de l’échantillon fourni. Les diamètres absents sont
-          exclus de la moyenne.
-        </p>
-      </template>
-    </section>
-    <!-- composant MapView.vue, affiche la map et le point de chaque arbres -->
-    <MapView />
+    </div>
+    <nav aria-label="Navigation principale">
+      <RouterLink to="/">Tableau de bord</RouterLink>
+      <RouterLink to="/carte">Carte</RouterLink>
+      <RouterLink to="/arbres">Liste des arbres</RouterLink>
+      <RouterLink to="/favoris"
+        >Mes favoris ({{ etat.favoris.length }})</RouterLink
+      >
+      <RouterLink to="/ajouter">Ajouter un arbre</RouterLink>
+    </nav>
+  </header>
+  <main id="contenu" tabindex="-1">
+    <p class="note-session">
+      Démonstration TP2 · Les changements sont temporaires et disparaissent au
+      rechargement.
+    </p>
+    <MessageEtat
+      v-if="notification.texte"
+      :type="notification.type"
+      dismissible
+      @fermer="effacerNotification"
+      >{{ notification.texte }}</MessageEtat
+    >
+    <MessageEtat v-if="etat.chargement">Chargement des arbres…</MessageEtat>
+    <MessageEtat v-else-if="etat.erreur" type="error"
+      ><p>{{ etat.erreur }}</p>
+      <button type="button" @click="arbresService.initialiser">
+        Réessayer
+      </button></MessageEtat
+    >
+    <RouterView v-else-if="etat.initialise" v-slot="{ Component, route }"
+      ><component :is="Component" :key="route.path"
+    /></RouterView>
   </main>
+  <footer>
+    Projet de session · Vue 3 + Tauri 2 · Échantillon d’arbres publics de
+    Montréal
+  </footer>
 </template>
-
-<style>
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  font-family: Arial, sans-serif;
-}
-
-main {
-  display: grid;
-  grid-template-rows: 60px auto minmax(320px, 1fr);
-  width: 100%;
-  height: 100%;
-}
-
-header {
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  color: white;
-  background-color: #176b3a;
-}
-
-h1 {
-  margin: 0;
-  font-size: 22px;
-}
-.resume {
-  padding: 0 20px;
-  background: #f4f7f2;
-}
-.resume p {
-  color: #586c5d;
-  font-size: 13px;
-}
-</style>
