@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
+  "productName": "Arbres de Montréal",
   "version": "0.1.0",
   "identifier": "com.arbresmontreal.app",
   "build": {
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-app",
-        "width": 800,
-        "height": 600
+        "title": "Arbres de Montréal",
+        "width": 1100,
+        "height": 800,
+        "minWidth": 600,
+        "minHeight": 500
       }
     ],
     "security": {
