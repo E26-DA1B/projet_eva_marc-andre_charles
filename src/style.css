@@ -108,6 +108,12 @@ button:disabled {
   background: #edf5e9;
   font-weight: 600;
 }
+
+.entete img#logo {
+  height: 42px;
+  width: auto;
+}
+
 main {
   max-width: 1228px;
   margin: auto;

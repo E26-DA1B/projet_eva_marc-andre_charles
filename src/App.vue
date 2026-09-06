@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import { arbresService } from "./services/arbresService";
 import { notification, effacerNotification } from "./services/notificationService";
 import MessageEtat from "./components/MessageEtat.vue";
+import logo from "/logo.jpg";
 
 const etat = arbresService.etat;
 
@@ -14,8 +15,8 @@ onMounted(() => {
 <template>
   <a class="lien-evitement" href="#contenu">Aller au contenu</a>
   <header class="entete">
-    <div class="marque">
-      <span aria-hidden="true">♧</span>
+    <div class="marque"> 
+      <img :src="logo" alt="Logo Arbres de Montréal" id="logo" />
       <div>
         <strong>Arbres de Montréal</strong>
         <small>Explorer et suivre la forêt urbaine</small>
