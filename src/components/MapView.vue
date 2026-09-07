@@ -108,6 +108,7 @@ onMounted(async () => {
         closeButton: false,
         closeOnClick: false,
         offset: 10,
+        className: "arbre-popup",
       })
         .setLngLat(event.lngLat)
         .setHTML(
@@ -193,4 +194,29 @@ onUnmounted(() => {
 .selection {
   margin-top: 16px;
 }
+
+:deep(.arbre-popup .maplibregl-popup-content) {
+  min-width: 190px;
+  padding: 12px 14px;
+  background: #f7fbf8;
+  border: 1px solid #cbd9ce;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(20, 55, 35, 0.18);
+  color: #24352b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+:deep(.arbre-popup .maplibregl-popup-content strong) {
+  display: block;
+  margin-bottom: 4px;
+  color: #176b3a;
+  font-size: 15px;
+}
+
+:deep(.arbre-popup .maplibregl-popup-tip) {
+  border-top-color: #f7fbf8;
+}
+
+
 </style>
