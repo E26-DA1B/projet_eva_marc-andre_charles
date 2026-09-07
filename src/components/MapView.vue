@@ -23,9 +23,15 @@ const donnees = computed(() => ({
   features: props.arbres.map((arbre) => ({
     type: "Feature",
     geometry: { type: "Point", coordinates: [arbre.longitude, arbre.latitude] },
-    properties: { id: arbre.id },
+    properties: { id: arbre.id, couleur: couleurPourEspece(arbre.essenceFr) },
   })),
 }));
+
+function couleurPourEspece(espece) {
+  let nombre = 0;
+  for (let i = 0; i < espece.length; i++) nombre += espece.charCodeAt(i);
+  return `hsl(${(nombre * 47) % 360}, 65%, 42%)`;
+}
 
 function synchroniser() {
   if (!map?.getStyle()) return;
@@ -38,10 +44,11 @@ function synchroniser() {
       type: "circle",
       source: "arbres",
       paint: {
-        "circle-radius": 5,
-        "circle-color": "#176b3a",
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 14, 6, 18, 9],
+        "circle-color": ["to-color", ["get", "couleur"]],
         "circle-stroke-width": 1,
         "circle-stroke-color": "#ffffff",
+        "circle-opacity": 0.85,
       },
     });
   }

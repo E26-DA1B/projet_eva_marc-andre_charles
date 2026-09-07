@@ -242,6 +242,30 @@ h2 {
   flex-direction: column;
   gap: 7px;
 }
+.champ-suggestion {
+  position: relative;
+}
+.suggestions {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  background: white;
+  border: 1px solid #acbfb0;
+  border-radius: 8px;
+  box-shadow: 0 5px 14px #213c2c22;
+}
+.suggestions li {
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.suggestions li:hover {
+  background: #eef5ef;
+}
 label {
   font-size: 14px;
   font-weight: 600;

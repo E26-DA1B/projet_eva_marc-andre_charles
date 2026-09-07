@@ -5,6 +5,13 @@ import { notifier } from "../services/notificationService";
 import ResumeArbres from "../components/ResumeArbres.vue";
 import MessageEtat from "../components/MessageEtat.vue";
 import BoutonFavori from "../components/BoutonFavori.vue";
+import {
+  rechercherParEspece,
+  filtrerParArrondissement,
+  filtrerParDiametre,
+  trierArbres,
+  obtenirSuggestionsEspeces,
+} from "../services/rechercheArbres.js";
 const props = defineProps({ favorisSeulement: Boolean });
 const collection = computed(() =>
   props.favorisSeulement
@@ -13,7 +20,10 @@ const collection = computed(() =>
 );
 const recherche = ref("");
 const arrondissement = ref("");
-const tri = ref("essence");
+const diametreMin = ref("");
+const diametreMax = ref("");
+const tri = ref("");
+const afficherSuggestions = ref(false);
 const page = ref(1);
 const taillePage = 20;
 const confirmation = ref(null);
@@ -26,12 +36,20 @@ const arrondissements = computed(() =>
   ),
 );
 const resultats = computed(() =>
-  filtrerArbres(
-    collection.value,
-    recherche.value,
-    arrondissement.value,
+  trierArbres(
+    filtrerParDiametre(
+      filtrerParArrondissement(
+        rechercherParEspece(collection.value, recherche.value),
+        arrondissement.value,
+      ),
+      diametreMin.value,
+      diametreMax.value,
+    ),
     tri.value,
   ),
+);
+const suggestionsEspeces = computed(() =>
+  obtenirSuggestionsEspeces(collection.value, recherche.value),
 );
 const pages = computed(() =>
   Math.max(1, Math.ceil(resultats.value.length / taillePage)),
@@ -39,7 +57,7 @@ const pages = computed(() =>
 const visibles = computed(() =>
   resultats.value.slice((page.value - 1) * taillePage, page.value * taillePage),
 );
-watch([recherche, arrondissement, tri], () => {
+watch([recherche, arrondissement, diametreMin, diametreMax, tri], () => {
   page.value = 1;
 });
 watch(pages, (maximum) => {
@@ -48,7 +66,14 @@ watch(pages, (maximum) => {
 function reinitialiser() {
   recherche.value = "";
   arrondissement.value = "";
-  tri.value = "essence";
+  diametreMin.value = "";
+  diametreMax.value = "";
+  tri.value = "";
+  afficherSuggestions.value = false;
+}
+function selectionnerSuggestion(suggestion) {
+  recherche.value = suggestion;
+  afficherSuggestions.value = false;
 }
 async function apresFavori(ajoute) {
   if (props.favorisSeulement && !ajoute) {
@@ -97,14 +122,24 @@ async function supprimer() {
       >
     </div>
     <div class="filtres panneau">
-      <div class="champ">
+      <div class="champ champ-suggestion">
         <label for="recherche">Rechercher</label
         ><input
           id="recherche"
           v-model="recherche"
           type="search"
+          autocomplete="off"
+          @focus="afficherSuggestions = true"
+          @input="afficherSuggestions = true"
+          @blur="afficherSuggestions = false"
           placeholder="Essence, arrondissement, numéro…"
         />
+        <ul v-if="afficherSuggestions && suggestionsEspeces.length" class="suggestions">
+          <li v-for="suggestion in suggestionsEspeces" :key="suggestion"
+            @mousedown.prevent="selectionnerSuggestion(suggestion)">
+            {{ suggestion }}
+          </li>
+        </ul>
       </div>
       <div class="champ">
         <label for="arrondissement-filtre">Arrondissement</label
@@ -116,8 +151,21 @@ async function supprimer() {
         </select>
       </div>
       <div class="champ">
+        <label for="diametre-min">Diametre min.</label>
+        <input id="diametre-min" v-model="diametreMin" type="number" min="0" />
+      </div>
+      <div class="champ">
+        <label for="diametre-max">Diametre max.</label>
+        <input id="diametre-max" v-model="diametreMax" type="number" min="0" />
+      </div>
+      <div class="champ">
         <label for="tri">Trier par</label
         ><select id="tri" v-model="tri">
+          <option value="">Aucun tri</option>
+          <option value="espece-az">Essence A a Z</option>
+          <option value="espece-za">Essence Z a A</option>
+          <option value="diametre-croissant">Diametre croissant</option>
+          <option value="diametre-decroissant">Diametre decroissant</option>
           <option value="essence">Essence (A à Z)</option>
           <option value="diametre">Diamètre décroissant</option>
         </select>

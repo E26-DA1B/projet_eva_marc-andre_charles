@@ -7,7 +7,7 @@ Application de bureau pour explorer un échantillon d’arbres publics de Montr�
 - Éva — nom complet à confirmer par l’équipe.
 - Marc-André — nom complet à confirmer par l’équipe.
 - Charles Legault — nom présent dans l’historique Git.
-- Dépôt du cours : https://github.com/E26-DA1B/projet_eva_marc-andre_charles
+- Dépôt du cours :  https://github.com/E26-DA1B/projet_eva_marc-andre_charle
 
 Les noms complets et la répartition réelle doivent être validés avant la remise. L’historique disponible au moment de la préparation contient les contributions de Charles pour MapLibre, le CSV et le GeoJSON. Les autres contributions ne sont pas inventées.
 

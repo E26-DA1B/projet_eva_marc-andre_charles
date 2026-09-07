@@ -51,7 +51,7 @@ export function filtrerParDiametre(arbres, diametreMin, diametreMax) {
 export function trierArbres(arbres, tri) {
   const copie = [...arbres];
 
-  if (tri === "espece-az") {
+  if (tri === "espece-az" || tri === "essence") {
     return copie.sort((a, b) => {
         //pour trier en ordre alphabetique
       return a.essenceFr.localeCompare(b.essenceFr);
@@ -72,7 +72,7 @@ export function trierArbres(arbres, tri) {
     });
   }
 
-  if (tri === "diametre-decroissant") {
+  if (tri === "diametre-decroissant" || tri === "diametre") {
     return copie.sort((a, b) => {
         // meme chose mais -1 pour les mettre au debut en ordre decroissant
       return (b.diametre ?? -1) - (a.diametre ?? -1);
