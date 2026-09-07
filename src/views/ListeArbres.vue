@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
-import { arbresService, filtrerArbres } from "../services/arbresService";
+import { arbresService } from "../services/arbresService";
 import { notifier } from "../services/notificationService";
 import ResumeArbres from "../components/ResumeArbres.vue";
 import MessageEtat from "../components/MessageEtat.vue";
@@ -14,9 +14,9 @@ import {
 } from "../services/rechercheArbres.js";
 const props = defineProps({ favorisSeulement: Boolean });
 const collection = computed(() =>
-  props.favorisSeulement
-    ? arbresService.obtenirFavoris()
-    : arbresService.etat.arbres,
+  props.favorisSeulement ?
+    arbresService.obtenirFavoris()
+  : arbresService.etat.arbres,
 );
 const recherche = ref("");
 const arrondissement = ref("");
@@ -134,9 +134,15 @@ async function supprimer() {
           @blur="afficherSuggestions = false"
           placeholder="Essence, arrondissement, numéro…"
         />
-        <ul v-if="afficherSuggestions && suggestionsEspeces.length" class="suggestions">
-          <li v-for="suggestion in suggestionsEspeces" :key="suggestion"
-            @mousedown.prevent="selectionnerSuggestion(suggestion)">
+        <ul
+          v-if="afficherSuggestions && suggestionsEspeces.length"
+          class="suggestions"
+        >
+          <li
+            v-for="suggestion in suggestionsEspeces"
+            :key="suggestion"
+            @mousedown.prevent="selectionnerSuggestion(suggestion)"
+          >
             {{ suggestion }}
           </li>
         </ul>
@@ -166,8 +172,6 @@ async function supprimer() {
           <option value="espece-za">Essence Z a A</option>
           <option value="diametre-croissant">Diametre croissant</option>
           <option value="diametre-decroissant">Diametre decroissant</option>
-          <option value="essence">Essence (A à Z)</option>
-          <option value="diametre">Diamètre décroissant</option>
         </select>
       </div>
       <button class="secondaire" type="button" @click="reinitialiser">
@@ -215,17 +219,17 @@ async function supprimer() {
                   arbre.essenceLatin || "Nom latin non renseigné"
                 }}</small
                 ><small>{{
-                  arbre.numeroInventaire === null
-                    ? "Ajout de cette session"
-                    : "Inventaire " + arbre.numeroInventaire
+                  arbre.numeroInventaire === null ?
+                    "Ajout de cette session"
+                  : "Inventaire " + arbre.numeroInventaire
                 }}</small>
               </td>
               <td>{{ arbre.arrondissement }}</td>
               <td>
                 {{
-                  arbre.diametre === null
-                    ? "Non renseigné"
-                    : arbre.diametre + " cm"
+                  arbre.diametre === null ?
+                    "Non renseigné"
+                  : arbre.diametre + " cm"
                 }}
               </td>
               <td>
