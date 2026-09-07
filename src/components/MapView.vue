@@ -18,12 +18,19 @@ const chargement = ref(true);
 const selection = ref(null);
 let map = null;
 let demonte = false;
+let popup = null;
 const donnees = computed(() => ({
   type: "FeatureCollection",
   features: props.arbres.map((arbre) => ({
     type: "Feature",
     geometry: { type: "Point", coordinates: [arbre.longitude, arbre.latitude] },
-    properties: { id: arbre.id, couleur: couleurPourEspece(arbre.essenceFr) },
+    properties: {
+      id: arbre.id,
+      couleur: couleurPourEspece(arbre.essenceFr),
+      essenceFr: arbre.essenceFr,
+      arrondissement: arbre.arrondissement,
+      diametre: arbre.diametre,
+    },
   })),
 }));
 
@@ -44,7 +51,17 @@ function synchroniser() {
       type: "circle",
       source: "arbres",
       paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 14, 6, 18, 9],
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10,
+          3,
+          14,
+          6,
+          18,
+          9,
+        ],
         "circle-color": ["to-color", ["get", "couleur"]],
         "circle-stroke-width": 1,
         "circle-stroke-color": "#ffffff",
@@ -73,11 +90,39 @@ onMounted(async () => {
       const id = event.features?.[0]?.properties?.id;
       selection.value = props.arbres.find((arbre) => arbre.id === id) || null;
     });
-    map.on("mouseenter", "arbres-points", () => {
+    map.on("mouseenter", "arbres-points", (event) => {
       map.getCanvas().style.cursor = "pointer";
+
+      const arbre = event.features?.[0];
+
+      if (!arbre) {
+        return;
+      }
+
+      const diametre =
+        arbre.properties.diametre == null ?
+          "Non renseigné"
+        : `${arbre.properties.diametre} cm`;
+
+      popup = new maplibregl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        offset: 10,
+      })
+        .setLngLat(event.lngLat)
+        .setHTML(
+          `
+      <strong>${arbre.properties.essenceFr}</strong><br>
+      ${arbre.properties.arrondissement}<br>
+      Diamètre : ${diametre}
+    `,
+        )
+        .addTo(map);
     });
     map.on("mouseleave", "arbres-points", () => {
       map.getCanvas().style.cursor = "";
+      popup?.remove();
+      popup = null;
     });
     map.on("error", () => {
       erreur.value =
@@ -95,6 +140,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   demonte = true;
+  popup?.remove();
   map?.remove();
 });
 </script>
@@ -105,14 +151,14 @@ onUnmounted(() => {
     {{ erreur }}
     <RouterLink to="/arbres">Voir la liste</RouterLink>
   </MessageEtat>
- 
+
   <div
     ref="mapContainer"
     class="map"
     role="region"
     aria-label="Carte interactive des arbres de Montréal"
   ></div>
-   <p class="aide">
+  <p class="aide">
     Cliquez sur un point pour consulter un arbre. Les détails sont aussi
     accessibles dans la liste.
   </p>
@@ -121,9 +167,9 @@ onUnmounted(() => {
     <p>
       {{ selection.arrondissement }} · Diamètre :
       {{
-        selection.diametre === null
-          ? "non renseigné"
-          : selection.diametre + " cm"
+        selection.diametre === null ?
+          "non renseigné"
+        : selection.diametre + " cm"
       }}
     </p>
     <div class="actions">
