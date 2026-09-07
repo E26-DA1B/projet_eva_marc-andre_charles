@@ -105,16 +105,17 @@ onUnmounted(() => {
     {{ erreur }}
     <RouterLink to="/arbres">Voir la liste</RouterLink>
   </MessageEtat>
-  <p class="aide">
-    Cliquez sur un point pour consulter un arbre. Les détails sont aussi
-    accessibles dans la liste.
-  </p>
+ 
   <div
     ref="mapContainer"
     class="map"
     role="region"
     aria-label="Carte interactive des arbres de Montréal"
   ></div>
+   <p class="aide">
+    Cliquez sur un point pour consulter un arbre. Les détails sont aussi
+    accessibles dans la liste.
+  </p>
   <article v-if="selection" class="panneau selection">
     <h2>{{ selection.essenceFr }}</h2>
     <p>
