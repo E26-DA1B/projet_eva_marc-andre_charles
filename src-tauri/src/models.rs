@@ -1,10 +1,9 @@
 // serialize pour envoyer l'arbre vers Vue
-// Deserialize pour recevoir un arbre venant de Vue
+// deserialize pour recevoir un arbre venant de Vue
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
-//renommer les noms ex : numeroInventaire a numero_inventaire (pour rust)
+// convertit les noms Rust en camelCase pour Vue
 #[serde(rename_all = "camelCase")]
 pub struct Arbre {
     id: String,
@@ -15,6 +14,9 @@ pub struct Arbre {
     diametre: Option<f64>,
     longitude: f64,
     latitude: f64,
+    rue: Option<String>,
+    date_plantation: Option<String>,
+    arbre_remarquable: Option<String>,
 }
 
 impl Arbre {
@@ -27,6 +29,9 @@ impl Arbre {
         diametre: Option<f64>,
         longitude: f64,
         latitude: f64,
+        rue: Option<String>,
+        date_plantation: Option<String>,
+        arbre_remarquable: Option<String>,
     ) -> Self {
         Self {
             id,
@@ -37,6 +42,9 @@ impl Arbre {
             diametre,
             longitude,
             latitude,
+            rue,
+            date_plantation,
+            arbre_remarquable,
         }
     }
 
@@ -63,6 +71,15 @@ impl Arbre {
     }
     pub fn latitude(&self) -> f64 {
         self.latitude
+    }
+    pub fn rue(&self) -> Option<&str> {
+        self.rue.as_deref()
+    }
+    pub fn date_plantation(&self) -> Option<&str> {
+        self.date_plantation.as_deref()
+    }
+    pub fn arbre_remarquable(&self) -> Option<&str> {
+        self.arbre_remarquable.as_deref()
     }
 
     pub fn modifier_diametre(&mut self, nouveau_diametre: Option<f64>) -> Result<(), String> {
