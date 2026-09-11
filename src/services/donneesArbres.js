@@ -41,7 +41,7 @@ export function lireCsv(texte) {
 }
 
 export async function chargerArbres() {
-  const reponse = await fetch("/data/arbres-test.csv").catch(() => {
+  const reponse = await fetch("/data/liste_arbre.csv").catch(() => {
     throw new Error(
       "Impossible de charger les arbres. Vérifiez l’accès aux données locales puis réessayez.",
     );
