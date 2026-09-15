@@ -48,7 +48,7 @@ export async function chargerArbres() {
   });
   if (!reponse.ok)
     throw new Error(
-      "Impossible de charger les arbres. Vérifiez le fichier arbres-test.csv.",
+      "Impossible de charger les arbres. Vérifiez le fichier liste_arbre.csv.",
     );
   return lireCsv(await reponse.text());
 }

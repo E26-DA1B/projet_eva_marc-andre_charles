@@ -90,8 +90,8 @@ async function enregistrer() {
   }
   enCours.value = true;
   try {
-    if (props.id) arbresService.modifier(props.id, formulaire);
-    else arbresService.ajouter(formulaire);
+    if (props.id) await arbresService.modifier(props.id, formulaire);
+    else await arbresService.ajouter(formulaire);
     notifier(
       props.id ? "Arbre modifié avec succès." : "Arbre ajouté avec succès.",
     );

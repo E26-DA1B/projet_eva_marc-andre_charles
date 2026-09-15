@@ -69,11 +69,11 @@ test("retirer un favori conserve l’arbre; une nouvelle session repart sans fav
 test("le CSV livré se lit et contient des coordonnées valides et des identifiants uniques", () => {
   const arbres = lireCsv(
     readFileSync(
-      new URL("../public/data/arbres-test.csv", import.meta.url),
+      new URL("../public/data/liste_arbre.csv", import.meta.url),
       "utf8",
     ),
   );
-  assert.equal(arbres.length, 1000);
+  assert.equal(arbres.length, 122480);
   assert.equal(new Set(arbres.map((arbre) => arbre.id)).size, arbres.length);
   assert.ok(
     arbres.every(
@@ -81,7 +81,7 @@ test("le CSV livré se lit et contient des coordonnées valides et des identifia
         Number.isFinite(arbre.latitude) && Number.isFinite(arbre.longitude),
     ),
   );
-  assert.equal(calculerResume(arbres).essences, 126);
+  assert.equal(calculerResume(arbres).essences, 604);
 });
 test("un CSV absent remplacé par du HTML, ou un CSV malformé, ne devient pas une collection vide", () => {
   assert.throws(() => lireCsv("<!doctype html><html></html>"), /invalide/);

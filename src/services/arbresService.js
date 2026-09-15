@@ -1,5 +1,17 @@
 import { reactive, readonly } from "vue";
 import { chargerArbres } from "./donneesArbres.js";
+import { invoke } from "@tauri-apps/api/core";
+
+const tauriActif = () => typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
+const versRust = (arbre) => ({
+  id: arbre.id == null ? "" : String(arbre.id),
+  numeroInventaire: arbre.numeroInventaire == null ? null : Number(arbre.numeroInventaire),
+  essenceFr: arbre.essenceFr,
+  essenceLatin: arbre.essenceLatin || "",
+  arrondissement: arbre.arrondissement,
+  diametre: arbre.diametre == null ? null : Number(arbre.diametre),
+  latitude: Number(arbre.latitude), longitude: Number(arbre.longitude),
+});
 
 export function validerArbre(donnees) {
   const erreurs = {};
@@ -38,7 +50,7 @@ export function validerArbre(donnees) {
 
 export { lireCsv } from "./donneesArbres.js";
 
-// Collection en mémoire partagée par les vues. Au TP3 : remplacer les opérations par invoke().
+// En navigateur, le service garde le mode mémoire pour les tests; dans Tauri, il passe par invoke().
 export function creerServiceArbres(charger = chargerArbres) {
   const etat = reactive({
     arbres: [],
@@ -54,8 +66,15 @@ export function creerServiceArbres(charger = chargerArbres) {
     if (requete) return requete;
     etat.chargement = true;
     etat.erreur = "";
-    requete = Promise.resolve()
-      .then(charger)
+    requete = (tauriActif()
+      ? invoke("lister_arbres").then(async (arbres) => {
+          if (arbres.length) return arbres;
+          const initiaux = await charger();
+          const avecIds = initiaux.map((arbre, index) => ({ ...arbre, id: String(index + 1) }));
+          await invoke("importer_arbres", { arbres: avecIds.map(versRust) });
+          return avecIds;
+        })
+      : Promise.resolve().then(charger))
       .then((arbres) => {
         etat.arbres = arbres;
         etat.initialise = true;
@@ -88,6 +107,12 @@ export function creerServiceArbres(charger = chargerArbres) {
   }
   function ajouter(donnees) {
     const valeurs = preparer(donnees);
+    if (tauriActif()) {
+      return invoke("ajouter_arbre", { arbre: versRust({ ...valeurs, id: "" }) }).then((arbre) => {
+        etat.arbres.push(arbre);
+        return arbre.id;
+      });
+    }
     const arbre = {
       ...valeurs,
       id: `local-${prochainId++}`,
@@ -98,15 +123,20 @@ export function creerServiceArbres(charger = chargerArbres) {
   }
   function modifier(id, donnees) {
     const valeurs = preparer(donnees);
-    const arbre = etat.arbres.find((element) => element.id === id);
+    const arbre = etat.arbres.find((element) => String(element.id) === String(id));
     if (!arbre) throw new Error("Cet arbre n’existe plus.");
+    if (tauriActif()) return invoke("modifier_arbre", { id: String(id), arbre: versRust({ ...arbre, ...valeurs }) }).then(() => Object.assign(arbre, valeurs));
     Object.assign(arbre, valeurs);
   }
   function supprimer(id) {
-    const index = etat.arbres.findIndex((arbre) => arbre.id === id);
+    const index = etat.arbres.findIndex((arbre) => String(arbre.id) === String(id));
     if (index < 0) throw new Error("Cet arbre n’existe plus.");
+    if (tauriActif()) return invoke("supprimer_arbre", { id: String(id) }).then(() => {
+      etat.arbres.splice(index, 1);
+      etat.favoris = etat.favoris.filter((favori) => favori !== id);
+    });
     etat.arbres.splice(index, 1);
-    etat.favoris = etat.favoris.filter((favori) => favori !== id);
+    etat.favoris = etat.favoris.filter((favori) => String(favori) !== String(id));
   }
   function ajouterFavori(id) {
     if (!etat.arbres.some((arbre) => arbre.id === id))
