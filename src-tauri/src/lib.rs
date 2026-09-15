@@ -15,6 +15,7 @@ pub fn run() {
             std::fs::create_dir_all(&dossier)?;
             app.manage(commands::AppState {
                 chemin: dossier.join("arbres.json"),
+                chemin_favoris: dossier.join("favoris.json"),
                 verrou: std::sync::Mutex::new(()),
             });
             Ok(())
@@ -22,6 +23,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::lister_arbres,
             commands::importer_arbres,
+            commands::lister_favoris,
+            commands::ajouter_favori,
+            commands::retirer_favori,
             commands::ajouter_arbre,
             commands::modifier_arbre,
             commands::supprimer_arbre

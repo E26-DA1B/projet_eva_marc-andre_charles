@@ -10,11 +10,11 @@ const action = computed(() =>
   favori.value ? "Retirer des favoris" : "Ajouter aux favoris",
 );
 
-function changer() {
+async function changer() {
   try {
     const ajouter = !favori.value;
-    if (ajouter) arbresService.ajouterFavori(props.arbre.id);
-    else arbresService.retirerFavori(props.arbre.id);
+    if (ajouter) await arbresService.ajouterFavori(props.arbre.id);
+    else await arbresService.retirerFavori(props.arbre.id);
     notifier(
       ajouter ? "Arbre ajouté aux favoris." : "Arbre retiré des favoris.",
     );

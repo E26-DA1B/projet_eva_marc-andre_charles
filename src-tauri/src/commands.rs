@@ -4,6 +4,7 @@ use tauri::State;
 
 pub struct AppState {
     pub chemin: PathBuf,
+    pub chemin_favoris: PathBuf,
     pub verrou: Mutex<()>,
 }
 
@@ -17,6 +18,28 @@ pub fn lister_arbres(state: State<'_, AppState>) -> Result<Vec<Arbre>, String> {
 pub fn importer_arbres(arbres: Vec<Arbre>, state: State<'_, AppState>) -> Result<(), String> {
     let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
     repository::importer(&state.chemin, &arbres)
+}
+
+#[tauri::command]
+pub fn lister_favoris(state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    repository::charger_favoris(&state.chemin_favoris)
+}
+
+#[tauri::command]
+pub fn ajouter_favori(id: String, state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    let arbres = repository::charger_arbres(&state.chemin)?;
+    if !arbres.iter().any(|arbre| arbre.id() == id) {
+        return Err("Arbre introuvable.".to_string());
+    }
+    repository::ajouter_favori(&state.chemin_favoris, id)
+}
+
+#[tauri::command]
+pub fn retirer_favori(id: String, state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    repository::retirer_favori(&state.chemin_favoris, &id)
 }
 
 #[tauri::command]
@@ -40,5 +63,7 @@ pub fn modifier_arbre(
 #[tauri::command]
 pub fn supprimer_arbre(id: String, state: State<'_, AppState>) -> Result<(), String> {
     let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
-    repository::supprimer(&state.chemin, &id)
+    repository::supprimer(&state.chemin, &id)?;
+    repository::retirer_favori(&state.chemin_favoris, &id)?;
+    Ok(())
 }
