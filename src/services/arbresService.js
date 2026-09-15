@@ -39,6 +39,8 @@ export function validerArbre(donnees) {
     donnees.essenceLatin.trim().length > 120
   )
     erreurs.essenceLatin = "Maximum de 120 caractères.";
+  if (typeof donnees.observation === "string" && donnees.observation.trim().length > 1000)
+    erreurs.observation = "L’observation doit contenir au maximum 1 000 caractères.";
   for (const [champ, minimum, maximum, titre] of [
     ["diametre", 0.1, 1000, "Le diamètre"],
     ["longitude", -180, 180, "La longitude"],
@@ -84,8 +86,14 @@ export function creerServiceArbres(charger = chargerArbres) {
             await invoke("importer_arbres", { arbres: avecIds.map(versRust) });
             arbres = avecIds;
           }
-          const favoris = await invoke("lister_favoris");
-          return { arbres, favoris };
+          const [favoris, observations] = await Promise.all([
+            invoke("lister_favoris"),
+            invoke("lister_observations"),
+          ]);
+          return {
+            arbres: arbres.map((arbre) => ({ ...arbre, observation: observations[arbre.id] || "" })),
+            favoris,
+          };
         })
       : Promise.resolve().then(async () => ({ arbres: await charger(), favoris: [] })))
       .then(({ arbres, favoris }) => {
@@ -117,13 +125,15 @@ export function creerServiceArbres(charger = chargerArbres) {
       diametre: Number(donnees.diametre),
       longitude: Number(donnees.longitude),
       latitude: Number(donnees.latitude),
+      observation: (donnees.observation || "").trim(),
     };
   }
   function ajouter(donnees) {
     const valeurs = preparer(donnees);
     if (tauriActif()) {
-      return invoke("ajouter_arbre", { arbre: versRust({ ...valeurs, id: "" }) }).then((arbre) => {
-        etat.arbres.push(arbre);
+      return invoke("ajouter_arbre", { arbre: versRust({ ...valeurs, id: "" }) }).then(async (arbre) => {
+        await invoke("sauvegarder_observation", { id: String(arbre.id), texte: valeurs.observation });
+        etat.arbres.push({ ...arbre, observation: valeurs.observation });
         return arbre.id;
       });
     }
@@ -131,6 +141,7 @@ export function creerServiceArbres(charger = chargerArbres) {
       ...valeurs,
       id: `local-${prochainId++}`,
       numeroInventaire: null,
+      observation: valeurs.observation,
     };
     etat.arbres.push(arbre);
     return arbre.id;
@@ -139,7 +150,10 @@ export function creerServiceArbres(charger = chargerArbres) {
     const valeurs = preparer(donnees);
     const arbre = etat.arbres.find((element) => String(element.id) === String(id));
     if (!arbre) throw new Error("Cet arbre n’existe plus.");
-    if (tauriActif()) return invoke("modifier_arbre", { id: String(id), arbre: versRust({ ...arbre, ...valeurs }) }).then(() => Object.assign(arbre, valeurs));
+    if (tauriActif()) return invoke("modifier_arbre", { id: String(id), arbre: versRust({ ...arbre, ...valeurs }) }).then(async () => {
+      await invoke("sauvegarder_observation", { id: String(id), texte: valeurs.observation });
+      Object.assign(arbre, valeurs);
+    });
     Object.assign(arbre, valeurs);
   }
   function supprimer(id) {

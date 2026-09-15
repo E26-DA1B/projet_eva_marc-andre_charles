@@ -5,6 +5,7 @@ use tauri::State;
 pub struct AppState {
     pub chemin: PathBuf,
     pub chemin_favoris: PathBuf,
+    pub chemin_observations: PathBuf,
     pub verrou: Mutex<()>,
 }
 
@@ -43,6 +44,31 @@ pub fn retirer_favori(id: String, state: State<'_, AppState>) -> Result<Vec<Stri
 }
 
 #[tauri::command]
+pub fn lister_observations(
+    state: State<'_, AppState>,
+) -> Result<std::collections::HashMap<String, String>, String> {
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    repository::charger_observations(&state.chemin_observations)
+}
+
+#[tauri::command]
+pub fn sauvegarder_observation(
+    id: String,
+    texte: String,
+    state: State<'_, AppState>,
+) -> Result<std::collections::HashMap<String, String>, String> {
+    if texte.chars().count() > 1000 {
+        return Err("L’observation doit contenir au maximum 1 000 caractères.".to_string());
+    }
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    let arbres = repository::charger_arbres(&state.chemin)?;
+    if !arbres.iter().any(|arbre| arbre.id() == id) {
+        return Err("Arbre introuvable.".to_string());
+    }
+    repository::sauvegarder_observation(&state.chemin_observations, id, texte)
+}
+
+#[tauri::command]
 pub fn ajouter_arbre(arbre: Arbre, state: State<'_, AppState>) -> Result<Arbre, String> {
     validation::valider_arbre(&arbre)?;
     let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
@@ -65,5 +91,7 @@ pub fn supprimer_arbre(id: String, state: State<'_, AppState>) -> Result<(), Str
     let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
     repository::supprimer(&state.chemin, &id)?;
     repository::retirer_favori(&state.chemin_favoris, &id)?;
-    Ok(())
+    let mut observations = repository::charger_observations(&state.chemin_observations)?;
+    observations.remove(&id);
+    repository::sauvegarder_observations(&state.chemin_observations, &observations)
 }
