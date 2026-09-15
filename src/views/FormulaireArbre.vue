@@ -1,7 +1,11 @@
 <script setup>
 import { computed, nextTick, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { arbresService, validerArbre } from "../services/arbresService";
+import {
+  arbresService,
+  obtenirMessageErreur,
+  validerArbre,
+} from "../services/arbresService";
 import { notifier } from "../services/notificationService";
 import MessageEtat from "../components/MessageEtat.vue";
 const props = defineProps({ id: String });
@@ -97,7 +101,10 @@ async function enregistrer() {
     );
     await router.push("/arbres");
   } catch (erreur) {
-    erreurOperation.value = erreur.message;
+    erreurOperation.value = obtenirMessageErreur(
+      erreur,
+      "Impossible d’enregistrer cet arbre.",
+    );
   } finally {
     enCours.value = false;
   }

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
-import { arbresService } from "../services/arbresService";
+import { arbresService, obtenirMessageErreur } from "../services/arbresService";
 import { notifier } from "../services/notificationService";
 import ResumeArbres from "../components/ResumeArbres.vue";
 import MessageEtat from "../components/MessageEtat.vue";
@@ -99,7 +99,7 @@ async function supprimer() {
     await nextTick();
     titre.value.focus();
   } catch (erreur) {
-    notifier(erreur.message, "error");
+    notifier(obtenirMessageErreur(erreur, "Impossible de supprimer cet arbre."), "error");
     annuler();
   }
 }
