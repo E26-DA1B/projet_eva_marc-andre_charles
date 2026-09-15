@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { arbresService } from "../services/arbresService";
+import { arbresService, obtenirMessageErreur } from "../services/arbresService";
 import { notifier } from "../services/notificationService";
 
 const props = defineProps({ arbre: { type: Object, required: true } });
@@ -20,7 +20,7 @@ function changer() {
     );
     emit("changer", ajouter);
   } catch (erreur) {
-    notifier(erreur.message, "error");
+    notifier(obtenirMessageErreur(erreur, "Impossible de modifier les favoris."), "error");
   }
 }
 </script>

@@ -6,8 +6,15 @@ import {
   creerServiceArbres,
   filtrerArbres,
   lireCsv,
+  obtenirMessageErreur,
   validerArbre,
 } from "../src/services/arbresService.js";
+
+test("les erreurs Rust sont converties en messages affichables", () => {
+  assert.equal(obtenirMessageErreur("Arbre introuvable."), "Arbre introuvable.");
+  assert.equal(obtenirMessageErreur({ message: "Données invalides." }), "Données invalides.");
+  assert.equal(obtenirMessageErreur(null, "Erreur de sauvegarde."), "Erreur de sauvegarde.");
+});
 
 const valide = {
   essenceFr: "Érable à sucre",

@@ -13,6 +13,16 @@ const versRust = (arbre) => ({
   latitude: Number(arbre.latitude), longitude: Number(arbre.longitude),
 });
 
+export function obtenirMessageErreur(erreur, messageParDefaut = "Une erreur est survenue.") {
+  const message =
+    typeof erreur === "string"
+      ? erreur
+      : erreur && typeof erreur.message === "string"
+        ? erreur.message
+        : "";
+  return message.trim() || messageParDefaut;
+}
+
 export function validerArbre(donnees) {
   const erreurs = {};
   for (const [champ, titre] of [
@@ -80,10 +90,10 @@ export function creerServiceArbres(charger = chargerArbres) {
         etat.initialise = true;
       })
       .catch((erreur) => {
-        etat.erreur =
-          erreur instanceof Error
-            ? erreur.message
-            : "Impossible de charger les arbres.";
+        etat.erreur = obtenirMessageErreur(
+          erreur,
+          "Impossible de charger les arbres.",
+        );
       })
       .finally(() => {
         etat.chargement = false;
