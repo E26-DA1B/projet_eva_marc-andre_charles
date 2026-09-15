@@ -1,14 +1,9 @@
-<<<<<<< Updated upstream
 pub mod models;
 pub mod validation;
-
-=======
->>>>>>> Stashed changes
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri::Manager;
 
 mod commands;
-mod models;
 mod repository;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -32,5 +27,5 @@ pub fn run() {
             commands::supprimer_arbre
         ])
         .run(tauri::generate_context!());
-    app.expect("error while running tauri application");
+    app.expect("erreur lors de l'exécution de l'application Tauri");
 }

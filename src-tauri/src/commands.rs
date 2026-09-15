@@ -1,4 +1,4 @@
-use crate::{models::Arbre, repository};
+use crate::{models::Arbre, repository, validation};
 use std::{path::PathBuf, sync::Mutex};
 use tauri::State;
 
@@ -21,6 +21,7 @@ pub fn importer_arbres(arbres: Vec<Arbre>, state: State<'_, AppState>) -> Result
 
 #[tauri::command]
 pub fn ajouter_arbre(arbre: Arbre, state: State<'_, AppState>) -> Result<Arbre, String> {
+    validation::valider_arbre(&arbre)?;
     let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
     repository::ajouter(&state.chemin, arbre)
 }
@@ -31,6 +32,7 @@ pub fn modifier_arbre(
     arbre: Arbre,
     state: State<'_, AppState>,
 ) -> Result<Arbre, String> {
+    validation::valider_arbre(&arbre)?;
     let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
     repository::modifier(&state.chemin, &id, arbre)
 }
