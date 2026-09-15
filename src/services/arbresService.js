@@ -78,15 +78,19 @@ export function creerServiceArbres(charger = chargerArbres) {
     etat.erreur = "";
     requete = (tauriActif()
       ? invoke("lister_arbres").then(async (arbres) => {
-          if (arbres.length) return arbres;
-          const initiaux = await charger();
-          const avecIds = initiaux.map((arbre, index) => ({ ...arbre, id: String(index + 1) }));
-          await invoke("importer_arbres", { arbres: avecIds.map(versRust) });
-          return avecIds;
+          if (!arbres.length) {
+            const initiaux = await charger();
+            const avecIds = initiaux.map((arbre, index) => ({ ...arbre, id: String(index + 1) }));
+            await invoke("importer_arbres", { arbres: avecIds.map(versRust) });
+            arbres = avecIds;
+          }
+          const favoris = await invoke("lister_favoris");
+          return { arbres, favoris };
         })
-      : Promise.resolve().then(charger))
-      .then((arbres) => {
+      : Promise.resolve().then(async () => ({ arbres: await charger(), favoris: [] })))
+      .then(({ arbres, favoris }) => {
         etat.arbres = arbres;
+        etat.favoris = favoris;
         etat.initialise = true;
       })
       .catch((erreur) => {
@@ -152,9 +156,20 @@ export function creerServiceArbres(charger = chargerArbres) {
     if (!etat.arbres.some((arbre) => arbre.id === id))
       throw new Error("Cet arbre n’existe plus.");
     // Un même arbre ne peut apparaître qu’une seule fois dans les favoris.
-    if (!etat.favoris.includes(id)) etat.favoris.push(id);
+    if (etat.favoris.includes(id)) return;
+    if (tauriActif()) {
+      return invoke("ajouter_favori", { id: String(id) }).then((favoris) => {
+        etat.favoris = favoris;
+      });
+    }
+    etat.favoris.push(id);
   }
   function retirerFavori(id) {
+    if (tauriActif()) {
+      return invoke("retirer_favori", { id: String(id) }).then((favoris) => {
+        etat.favoris = favoris;
+      });
+    }
     etat.favoris = etat.favoris.filter((favori) => favori !== id);
   }
   return {

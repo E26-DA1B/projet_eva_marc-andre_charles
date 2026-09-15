@@ -1,6 +1,38 @@
 use crate::models::Arbre;
 use std::{fs, path::Path};
 
+pub fn charger_favoris(path: &Path) -> Result<Vec<String>, String> {
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let contenu = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    if contenu.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+    serde_json::from_str(&contenu).map_err(|e| format!("favoris.json invalide: {e}"))
+}
+
+pub fn sauvegarder_favoris(path: &Path, favoris: &[String]) -> Result<(), String> {
+    let contenu = serde_json::to_string_pretty(favoris).map_err(|e| e.to_string())?;
+    fs::write(path, contenu).map_err(|e| e.to_string())
+}
+
+pub fn ajouter_favori(path: &Path, id: String) -> Result<Vec<String>, String> {
+    let mut favoris = charger_favoris(path)?;
+    if !favoris.contains(&id) {
+        favoris.push(id);
+        sauvegarder_favoris(path, &favoris)?;
+    }
+    Ok(favoris)
+}
+
+pub fn retirer_favori(path: &Path, id: &str) -> Result<Vec<String>, String> {
+    let mut favoris = charger_favoris(path)?;
+    favoris.retain(|favori| favori != id);
+    sauvegarder_favoris(path, &favoris)?;
+    Ok(favoris)
+}
+
 pub fn charger_arbres(path: &Path) -> Result<Vec<Arbre>, String> {
     if !path.exists() {
         return Ok(Vec::new());
