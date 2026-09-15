@@ -19,12 +19,16 @@ const formulaire = reactive({
   diametre: "",
   longitude: "",
   latitude: "",
+  observation: "",
   ...existant,
 });
 const erreurs = ref({});
 const erreurOperation = ref("");
 const enCours = ref(false);
 const elementFormulaire = ref(null);
+function effacerObservation() {
+  formulaire.observation = "";
+}
 const arrondissements = computed(() =>
   [
     ...new Set(arbresService.etat.arbres.map((arbre) => arbre.arrondissement)),
@@ -175,6 +179,30 @@ async function enregistrer() {
             >{{ erreurs[champ.nom] }}</small
           >
         </div>
+      </div>
+      <div class="champ champ-observation">
+        <label for="observation">Observation personnelle</label>
+        <textarea
+          id="observation"
+          v-model="formulaire.observation"
+          maxlength="1000"
+          rows="4"
+          placeholder="Ajoutez une note personnelle sur cet arbre."
+          :aria-invalid="Boolean(erreurs.observation)"
+          aria-describedby="observation-aide observation-erreur"
+        ></textarea>
+        <small id="observation-aide" class="aide">Maximum de 1 000 caractères.</small>
+        <small v-if="erreurs.observation" id="observation-erreur" class="erreur-champ">
+          {{ erreurs.observation }}
+        </small>
+        <button
+          v-if="formulaire.observation"
+          type="button"
+          class="bouton secondaire"
+          @click="effacerObservation"
+        >
+          Supprimer l’observation
+        </button>
       </div>
       <datalist id="arrondissements">
         <option v-for="nom in arrondissements" :key="nom" :value="nom" />

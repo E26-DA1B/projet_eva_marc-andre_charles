@@ -1,5 +1,39 @@
 use crate::models::Arbre;
-use std::{fs, path::Path};
+use std::{collections::HashMap, fs, path::Path};
+
+pub fn charger_observations(path: &Path) -> Result<HashMap<String, String>, String> {
+    if !path.exists() {
+        return Ok(HashMap::new());
+    }
+    let contenu = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    if contenu.trim().is_empty() {
+        return Ok(HashMap::new());
+    }
+    serde_json::from_str(&contenu).map_err(|e| format!("observations.json invalide: {e}"))
+}
+
+pub fn sauvegarder_observations(
+    path: &Path,
+    observations: &HashMap<String, String>,
+) -> Result<(), String> {
+    let contenu = serde_json::to_string_pretty(observations).map_err(|e| e.to_string())?;
+    fs::write(path, contenu).map_err(|e| e.to_string())
+}
+
+pub fn sauvegarder_observation(
+    path: &Path,
+    id: String,
+    texte: String,
+) -> Result<HashMap<String, String>, String> {
+    let mut observations = charger_observations(path)?;
+    if texte.trim().is_empty() {
+        observations.remove(&id);
+    } else {
+        observations.insert(id, texte.trim().to_string());
+    }
+    sauvegarder_observations(path, &observations)?;
+    Ok(observations)
+}
 
 pub fn charger_favoris(path: &Path) -> Result<Vec<String>, String> {
     if !path.exists() {

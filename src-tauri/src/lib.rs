@@ -17,6 +17,7 @@ pub fn run() {
             app.manage(commands::AppState {
                 chemin: dossier.join("arbres.json"),
                 chemin_favoris: dossier.join("favoris.json"),
+                chemin_observations: dossier.join("observations.json"),
                 verrou: std::sync::Mutex::new(()),
             });
             Ok(())
@@ -27,6 +28,8 @@ pub fn run() {
             commands::lister_favoris,
             commands::ajouter_favori,
             commands::retirer_favori,
+            commands::lister_observations,
+            commands::sauvegarder_observation,
             commands::ajouter_arbre,
             commands::modifier_arbre,
             commands::supprimer_arbre
