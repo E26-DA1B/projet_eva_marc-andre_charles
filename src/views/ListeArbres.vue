@@ -93,7 +93,7 @@ function annuler() {
 }
 async function supprimer() {
   try {
-    arbresService.supprimer(confirmation.value.id);
+    await arbresService.supprimer(confirmation.value.id);
     notifier("Arbre supprimé de la collection.");
     annuler();
     await nextTick();

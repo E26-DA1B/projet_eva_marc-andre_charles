@@ -7,15 +7,15 @@ import { lireCsv } from "../src/services/donneesArbres.js";
 test("les statistiques utilisent le CSV livré avec le projet", () => {
   const arbres = lireCsv(
     readFileSync(
-      new URL("../public/data/arbres-test.csv", import.meta.url),
+      new URL("../public/data/liste_arbre.csv", import.meta.url),
       "utf8",
     ),
   );
   const resume = calculerResume(arbres);
-  assert.equal(resume.total, 1000);
-  assert.equal(resume.essences, 126);
-  assert.equal(resume.arrondissements, 1);
-  assert.equal(resume.diametreMoyen, 25.752);
+  assert.equal(resume.total, 122480);
+  assert.equal(resume.essences, 604);
+  assert.equal(resume.arrondissements, 13);
+  assert.equal(resume.diametreMoyen, 24.466766229408957);
 });
 
 test("la moyenne ignore les diamètres absents ou invalides", () => {

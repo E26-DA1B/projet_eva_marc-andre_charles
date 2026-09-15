@@ -1,0 +1,82 @@
+use crate::models::Arbre;
+use std::{fs, path::Path};
+
+pub fn charger_arbres(path: &Path) -> Result<Vec<Arbre>, String> {
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let contenu = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    if contenu.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+    serde_json::from_str(&contenu).map_err(|e| format!("arbres.json invalide: {e}"))
+}
+
+pub fn sauvegarder_arbres(path: &Path, arbres: &[Arbre]) -> Result<(), String> {
+    let contenu = serde_json::to_string_pretty(arbres).map_err(|e| e.to_string())?;
+    fs::write(path, contenu).map_err(|e| e.to_string())
+}
+
+pub fn importer(path: &Path, arbres: &[Arbre]) -> Result<(), String> {
+    sauvegarder_arbres(path, arbres)
+}
+
+pub fn ajouter(path: &Path, mut arbre: Arbre) -> Result<Arbre, String> {
+    let mut arbres = charger_arbres(path)?;
+    let prochain_id = arbres
+        .iter()
+        .filter_map(|a| a.id().parse::<u64>().ok())
+        .max()
+        .unwrap_or(0)
+        + 1;
+    arbre = Arbre::new(
+        prochain_id.to_string(),
+        arbre.numero_inventaire(),
+        arbre.essence_fr().to_string(),
+        arbre.essence_latin().map(str::to_string),
+        arbre.arrondissement().to_string(),
+        arbre.diametre(),
+        arbre.longitude(),
+        arbre.latitude(),
+        arbre.rue().map(str::to_string),
+        arbre.date_plantation().map(str::to_string),
+        arbre.arbre_remarquable().map(str::to_string),
+    );
+    arbres.push(arbre.clone());
+    sauvegarder_arbres(path, &arbres)?;
+    Ok(arbre)
+}
+
+pub fn modifier(path: &Path, id: &str, arbre_modifie: Arbre) -> Result<Arbre, String> {
+    let mut arbres = charger_arbres(path)?;
+    let position = arbres
+        .iter_mut()
+        .position(|a| a.id() == id)
+        .ok_or("Arbre introuvable.")?;
+    let arbre = Arbre::new(
+        id.to_string(),
+        arbre_modifie.numero_inventaire(),
+        arbre_modifie.essence_fr().to_string(),
+        arbre_modifie.essence_latin().map(str::to_string),
+        arbre_modifie.arrondissement().to_string(),
+        arbre_modifie.diametre(),
+        arbre_modifie.longitude(),
+        arbre_modifie.latitude(),
+        arbre_modifie.rue().map(str::to_string),
+        arbre_modifie.date_plantation().map(str::to_string),
+        arbre_modifie.arbre_remarquable().map(str::to_string),
+    );
+    arbres[position] = arbre.clone();
+    sauvegarder_arbres(path, &arbres)?;
+    Ok(arbre)
+}
+
+pub fn supprimer(path: &Path, id: &str) -> Result<(), String> {
+    let mut arbres = charger_arbres(path)?;
+    let taille_avant = arbres.len();
+    arbres.retain(|arbre| arbre.id() != id);
+    if arbres.len() == taille_avant {
+        return Err("Arbre introuvable.".to_string());
+    }
+    sauvegarder_arbres(path, &arbres)
+}

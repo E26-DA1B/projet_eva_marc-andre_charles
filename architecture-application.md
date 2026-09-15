@@ -36,7 +36,7 @@ La route `/favoris` ouvre `FavorisArbres.vue`, qui réutilise `ListeArbres.vue` 
 
 Les favoris sont des identifiants d’arbres dans `etat.favoris`, conservés uniquement en mémoire. Le service expose `ajouterFavori(id)`, `retirerFavori(id)`, `estFavori(id)` et `obtenirFavoris()`. L’ajout refuse un arbre absent et évite les doublons. Le retrait ne supprime pas l’arbre. Supprimer un arbre nettoie aussi ses favoris; modifier un arbre actualise sa fiche favorite sans copier les données.
 
-`public/data/arbres-test.csv` est le jeu initial fourni dans Git. `src/services/arbresService.js` le lit une fois, vérifie son format et crée les objets JavaScript conservés en mémoire. Les lignes sans coordonnées valides sont exclues. Les identifiants internes uniques sont indépendants du numéro d’inventaire.
+`public/data/liste_arbre.csv` est le jeu initial fourni dans Git. `src/services/arbresService.js` le lit une fois en mode navigateur, ou l’importe dans `arbres.json` en mode Tauri. Les lignes sans coordonnées valides sont exclues. Les identifiants internes uniques sont indépendants du numéro d’inventaire.
 
 | Opération                | Contrat TP2                                                                    |
 | ------------------------ | ------------------------------------------------------------------------------ |
@@ -69,3 +69,8 @@ Champs obligatoires non blancs; textes de 120 caractères maximum; diamètre de 
 Rust devra protéger les limites des données et l’existence des arbres, et calculer le résumé. Les appels `invoke()` resteront centralisés dans le service JavaScript. Les méthodes de mutation deviendront asynchrones et mettront à jour la collection après confirmation de Rust.
 
 La persistance JSON est proposée pour conserver une portée raisonnable, mais n’est pas implémentée au TP2. Le TP3 devra documenter les modules et commandes réellement retenus, la persistance finale et les différences par rapport à cette proposition.
+## Choix final : JSON
+
+La collection est persistée localement dans `arbres.json`, placé dans le dossier de données de Tauri. `lib.rs` prépare ce chemin au démarrage; `repository.rs` lit et réécrit le JSON; `commands.rs` expose les opérations à Vue par `invoke()`.
+
+Au premier démarrage, Vue charge `public/data/liste_arbre.csv` puis l’importe dans JSON. Les démarrages suivants relisent directement `arbres.json`. Les opérations d’ajout, modification et suppression sont asynchrones et confirmées par Rust avant la mise à jour de l’état Vue.

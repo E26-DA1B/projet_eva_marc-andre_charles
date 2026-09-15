@@ -88,9 +88,7 @@ impl Arbre {
                 return Err("Le diamètre doit être entre 0,1 et 1000 cm.".to_string());
             }
         }
-
         self.diametre = nouveau_diametre;
-
         Ok(())
     }
 }
