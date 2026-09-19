@@ -1,4 +1,4 @@
-use crate::{models::Arbre, repository, validation};
+use crate::{models::Arbre, repository, validation, recherche};
 use std::{path::PathBuf, sync::Mutex};
 use tauri::State;
 
@@ -8,6 +8,15 @@ pub struct AppState {
     pub chemin_observations: PathBuf,
     pub verrou: Mutex<()>,
 }
+
+#[tauri::command]
+pub fn rechercher_arbres(arbres: Vec<Arbre>, recherche: String) -> Vec<Arbre> {
+    recherche::rechercher_par_espece(&arbres, &recherche)
+        .into_iter()
+        .cloned()
+        .collect()
+}
+
 
 #[tauri::command]
 pub fn lister_arbres(state: State<'_, AppState>) -> Result<Vec<Arbre>, String> {
