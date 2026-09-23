@@ -1,19 +1,26 @@
 import { reactive, readonly } from "vue";
 import { chargerArbres } from "./donneesArbres.js";
 import { invoke } from "@tauri-apps/api/core";
+import { rechercherParEspece } from "./rechercheArbres.js";
 
-const tauriActif = () => typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
+const tauriActif = () =>
+  typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
 const versRust = (arbre) => ({
   id: arbre.id == null ? "" : String(arbre.id),
-  numeroInventaire: arbre.numeroInventaire == null ? null : Number(arbre.numeroInventaire),
+  numeroInventaire:
+    arbre.numeroInventaire == null ? null : Number(arbre.numeroInventaire),
   essenceFr: arbre.essenceFr,
   essenceLatin: arbre.essenceLatin || "",
   arrondissement: arbre.arrondissement,
   diametre: arbre.diametre == null ? null : Number(arbre.diametre),
-  latitude: Number(arbre.latitude), longitude: Number(arbre.longitude),
+  latitude: Number(arbre.latitude),
+  longitude: Number(arbre.longitude),
 });
 
-export function obtenirMessageErreur(erreur, messageParDefaut = "Une erreur est survenue.") {
+export function obtenirMessageErreur(
+  erreur,
+  messageParDefaut = "Une erreur est survenue.",
+) {
   const message =
     typeof erreur === "string"
       ? erreur
@@ -39,8 +46,12 @@ export function validerArbre(donnees) {
     donnees.essenceLatin.trim().length > 120
   )
     erreurs.essenceLatin = "Maximum de 120 caractères.";
-  if (typeof donnees.observation === "string" && donnees.observation.trim().length > 1000)
-    erreurs.observation = "L’observation doit contenir au maximum 1 000 caractères.";
+  if (
+    typeof donnees.observation === "string" &&
+    donnees.observation.trim().length > 1000
+  )
+    erreurs.observation =
+      "L’observation doit contenir au maximum 1 000 caractères.";
   for (const [champ, minimum, maximum, titre] of [
     ["diametre", 0.1, 1000, "Le diamètre"],
     ["longitude", -180, 180, "La longitude"],
@@ -78,24 +89,37 @@ export function creerServiceArbres(charger = chargerArbres) {
     if (requete) return requete;
     etat.chargement = true;
     etat.erreur = "";
-    requete = (tauriActif()
-      ? invoke("lister_arbres").then(async (arbres) => {
-          if (!arbres.length) {
-            const initiaux = await charger();
-            const avecIds = initiaux.map((arbre, index) => ({ ...arbre, id: String(index + 1) }));
-            await invoke("importer_arbres", { arbres: avecIds.map(versRust) });
-            arbres = avecIds;
-          }
-          const [favoris, observations] = await Promise.all([
-            invoke("lister_favoris"),
-            invoke("lister_observations"),
-          ]);
-          return {
-            arbres: arbres.map((arbre) => ({ ...arbre, observation: observations[arbre.id] || "" })),
-            favoris,
-          };
-        })
-      : Promise.resolve().then(async () => ({ arbres: await charger(), favoris: [] })))
+    requete = (
+      tauriActif()
+        ? invoke("lister_arbres").then(async (arbres) => {
+            if (!arbres.length) {
+              const initiaux = await charger();
+              const avecIds = initiaux.map((arbre, index) => ({
+                ...arbre,
+                id: String(index + 1),
+              }));
+              await invoke("importer_arbres", {
+                arbres: avecIds.map(versRust),
+              });
+              arbres = avecIds;
+            }
+            const [favoris, observations] = await Promise.all([
+              invoke("lister_favoris"),
+              invoke("lister_observations"),
+            ]);
+            return {
+              arbres: arbres.map((arbre) => ({
+                ...arbre,
+                observation: observations[arbre.id] || "",
+              })),
+              favoris,
+            };
+          })
+        : Promise.resolve().then(async () => ({
+            arbres: await charger(),
+            favoris: [],
+          }))
+    )
       .then(({ arbres, favoris }) => {
         etat.arbres = arbres;
         etat.favoris = favoris;
@@ -131,8 +155,13 @@ export function creerServiceArbres(charger = chargerArbres) {
   function ajouter(donnees) {
     const valeurs = preparer(donnees);
     if (tauriActif()) {
-      return invoke("ajouter_arbre", { arbre: versRust({ ...valeurs, id: "" }) }).then(async (arbre) => {
-        await invoke("sauvegarder_observation", { id: String(arbre.id), texte: valeurs.observation });
+      return invoke("ajouter_arbre", {
+        arbre: versRust({ ...valeurs, id: "" }),
+      }).then(async (arbre) => {
+        await invoke("sauvegarder_observation", {
+          id: String(arbre.id),
+          texte: valeurs.observation,
+        });
         etat.arbres.push({ ...arbre, observation: valeurs.observation });
         return arbre.id;
       });
@@ -148,23 +177,50 @@ export function creerServiceArbres(charger = chargerArbres) {
   }
   function modifier(id, donnees) {
     const valeurs = preparer(donnees);
-    const arbre = etat.arbres.find((element) => String(element.id) === String(id));
+    const arbre = etat.arbres.find(
+      (element) => String(element.id) === String(id),
+    );
     if (!arbre) throw new Error("Cet arbre n’existe plus.");
-    if (tauriActif()) return invoke("modifier_arbre", { id: String(id), arbre: versRust({ ...arbre, ...valeurs }) }).then(async () => {
-      await invoke("sauvegarder_observation", { id: String(id), texte: valeurs.observation });
-      Object.assign(arbre, valeurs);
-    });
+    if (tauriActif())
+      return invoke("modifier_arbre", {
+        id: String(id),
+        arbre: versRust({ ...arbre, ...valeurs }),
+      }).then(async () => {
+        await invoke("sauvegarder_observation", {
+          id: String(id),
+          texte: valeurs.observation,
+        });
+        Object.assign(arbre, valeurs);
+      });
     Object.assign(arbre, valeurs);
   }
   function supprimer(id) {
-    const index = etat.arbres.findIndex((arbre) => String(arbre.id) === String(id));
+    const index = etat.arbres.findIndex(
+      (arbre) => String(arbre.id) === String(id),
+    );
     if (index < 0) throw new Error("Cet arbre n’existe plus.");
-    if (tauriActif()) return invoke("supprimer_arbre", { id: String(id) }).then(() => {
-      etat.arbres.splice(index, 1);
-      etat.favoris = etat.favoris.filter((favori) => favori !== id);
-    });
+    if (tauriActif())
+      return invoke("supprimer_arbre", { id: String(id) }).then(() => {
+        etat.arbres.splice(index, 1);
+        etat.favoris = etat.favoris.filter((favori) => favori !== id);
+      });
     etat.arbres.splice(index, 1);
-    etat.favoris = etat.favoris.filter((favori) => String(favori) !== String(id));
+    etat.favoris = etat.favoris.filter(
+      (favori) => String(favori) !== String(id),
+    );
+  }
+  async function rechercher(arbres, recherche) {
+    if (!tauriActif()) {
+      return rechercherParEspece(arbres, recherche);
+    }
+
+    const resultats = await invoke("rechercher_arbres", {
+      arbres: arbres.map(versRust),
+      recherche,
+    });
+
+    const ids = new Set(resultats.map((arbre) => arbre.id));
+    return arbres.filter((arbre) => ids.has(String(arbre.id)));
   }
   function ajouterFavori(id) {
     if (!etat.arbres.some((arbre) => arbre.id === id))
@@ -189,6 +245,7 @@ export function creerServiceArbres(charger = chargerArbres) {
   return {
     etat: readonly(etat),
     initialiser,
+    rechercher,
     obtenir: (id) => readonly(etat.arbres).find((arbre) => arbre.id === id),
     ajouter,
     modifier,
