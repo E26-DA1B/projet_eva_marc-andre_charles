@@ -2,6 +2,7 @@ import { reactive, readonly } from "vue";
 import { chargerArbres } from "./donneesArbres.js";
 import { invoke } from "@tauri-apps/api/core";
 import { rechercherParEspece } from "./rechercheArbres.js";
+import { calculerResume } from "./statistiquesService.js";
 
 const tauriActif = () =>
   typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
@@ -222,6 +223,13 @@ export function creerServiceArbres(charger = chargerArbres) {
     const ids = new Set(resultats.map((arbre) => arbre.id));
     return arbres.filter((arbre) => ids.has(String(arbre.id)));
   }
+  async function obtenirStatistiques() {
+    if (!tauriActif()) {
+      return calculerResume(etat.arbres);
+    }
+
+    return await invoke("obtenir_statistiques");
+  }
   function ajouterFavori(id) {
     if (!etat.arbres.some((arbre) => arbre.id === id))
       throw new Error("Cet arbre n’existe plus.");
@@ -255,6 +263,7 @@ export function creerServiceArbres(charger = chargerArbres) {
     estFavori: (id) => etat.favoris.includes(id),
     obtenirFavoris: () =>
       readonly(etat.arbres).filter((arbre) => etat.favoris.includes(arbre.id)),
+    obtenirStatistiques,
   };
 }
 
