@@ -34,7 +34,8 @@ pub fn run() {
             commands::ajouter_arbre,
             commands::modifier_arbre,
             commands::supprimer_arbre,
-            commands::rechercher_arbres
+            commands::rechercher_arbres,
+            commands::obtenir_statistiques
         ])
         .run(tauri::generate_context!());
     app.expect("erreur lors de l'exécution de l'application Tauri");

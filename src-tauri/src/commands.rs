@@ -1,4 +1,4 @@
-use crate::{models::Arbre, repository, validation, recherche};
+use crate::{models::Arbre, repository, validation, recherche, statistiques::{calculer_statistiques, Statistiques}};
 use std::{path::PathBuf, sync::Mutex};
 use tauri::State;
 
@@ -103,4 +103,11 @@ pub fn supprimer_arbre(id: String, state: State<'_, AppState>) -> Result<(), Str
     let mut observations = repository::charger_observations(&state.chemin_observations)?;
     observations.remove(&id);
     repository::sauvegarder_observations(&state.chemin_observations, &observations)
+}
+
+#[tauri::command]
+pub fn obtenir_statistiques(state: State<'_, AppState>) -> Result<Statistiques, String> {
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    let arbres = repository::charger_arbres(&state.chemin)?;
+    Ok(calculer_statistiques(&arbres))
 }
