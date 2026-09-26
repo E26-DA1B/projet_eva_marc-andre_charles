@@ -1,28 +1,24 @@
-# Arbres de Montréal — TP2
+# Arbres de Montréal — TP3
 
-Application de bureau pour explorer un échantillon d’arbres publics de Montréal et gérer une collection temporaire. Elle permet de repérer les essences, consulter les coordonnées et comparer les diamètres.
+Application de bureau pour explorer un échantillon d’arbres publics de Montréal et gérer une collection avec persistance. Elle permet de repérer les essences, consulter les coordonnées et comparer les diamètres.
 
 ## Équipe et dépôt
 
-- Éva — nom complet à confirmer par l’équipe.
-- Marc-André — nom complet à confirmer par l’équipe.
-- Charles Legault — nom présent dans l’historique Git.
-- Dépôt du cours :  https://github.com/E26-DA1B/projet_eva_marc-andre_charle
+- Eva Bessette : recherche en Rust, commande obtenir_statistiques, vérifications avant la remise (formatage Rust, compilation, build), mise à jour du README.
+- Marc-André Dufour : backend Tauri, commands.rs, persistance JSON, favoris, observations, gestion des erreurs, pages Vue (formulaire, tableau de bord, liste des arbres, favoris).
+- Charles Legault : carte; import CSV; rechercher, filtrer, trier, et suggestions en Javascript; fichiers models.rs, validation.rs, statistiques.rs; amélioration des pages Vue (formulaire, tableau de bord, liste des arbres, favoris).
+- Dépôt du cours : https://github.com/E26-DA1B/projet_eva_marc-andre_charles
 
-Les noms complets et la répartition réelle doivent être validés avant la remise. L’historique disponible au moment de la préparation contient les contributions de Charles pour MapLibre, le CSV et le GeoJSON. Les autres contributions ne sont pas inventées.
-
-Répartition proposée à confirmer : Éva (interface et accessibilité), Marc-André (service, formulaires et validation), Charles (carte et import CSV); vérifications et documentation en équipe. Cette proposition n’atteste pas de contributions déjà réalisées.
-
-## Fonctionnalités TP2
+## Fonctionnalités
 
 - Tableau de bord : total, nombre d’essences et d’arrondissements, diamètre moyen.
 - Carte interactive : position des arbres, sélection d’un point et accès à la modification.
-- Liste paginée : recherche sans distinction de casse ni d’accents, filtre par arrondissement, tri par essence ou diamètre.
+- Liste paginée : recherche (en Rust) sans distinction de casse ni d’accents, filtre par arrondissement, tri par essence ou diamètre.
 - Formulaire d’ajout et de modification : six champs, messages de validation et confirmation de succès.
 - Suppression avec confirmation et possibilité d’annuler.
 - Favoris : ajout/retrait depuis la liste ou la carte; page « Mes favoris » avec compteur, recherche, filtre et tri. Retirer un favori conserve l’arbre dans la collection.
 - États de chargement, erreur avec nouvelle tentative, collection vide et recherche sans résultat.
-- Données partagées en mémoire : les changements se reflètent entre les vues.
+- Données partagées en mémoire : les changements se reflètent entre les vues et sont persistants grâce à trois fichiers JSON sauvegardés par le backend Rust, et conservés même après un redémarrage.
 
 ## Technologies et prérequis
 
@@ -57,9 +53,9 @@ npm run dev
 
 ## Données et règles
 
-Le fichier livré `public/data/arbres-test.csv` contient 1 000 arbres, 126 essences et un arrondissement. Ce n’est pas l’inventaire complet de Montréal. Aucun téléchargement manuel d’un gros fichier CSV n’est nécessaire.
+Le fichier livré `public/data/liste_arbre.csv` contient 122 480 arbres, 604 essences et 13 arrondissements.
 
-Le service transforme ce fichier en objets JavaScript, puis conserve tous les ajouts, modifications et suppressions en mémoire. Les vues ne lisent pas directement le CSV. Pour essayer le filtre entre plusieurs arrondissements, ajouter un arbre avec un autre arrondissement.
+Javascript lit ce fichier CSV au premier chargement de l'application, envoie les arbres à Rust (`importer_arbres`), et Rust les sauvegarde dans `arbres.json`. Après cela, Rust lit `arbres.json`.
 
 Validation du formulaire :
 
@@ -85,27 +81,16 @@ Les tests Node couvrent le fichier livré, les erreurs de CSV, la validation, le
 
 Voir [architecture-application.md](architecture-application.md) pour les vues, les données, le contrat du service et les responsabilités Rust envisagées au TP3.
 
-## Limites et suite TP3
+## Persistance
 
-- Aucune persistance au TP2 : un rechargement complet ou un redémarrage réinitialise la collection au CSV fourni.
-- Les favoris sont également temporaires et repartent vides au rechargement. Leur persistance sera à ajouter au TP3.
+On utilise trois fichiers JSON sauvegardés par Rust, arbres.json, favoris.json et observations.json (que l'on peut trouver dans `%APPDATA%\com.arbresmontreal.app` sur Windows). On a choisi JSON parce que c'est relativement simple à utiliser avec Rust (Serde convertit les `Arbre` en JSON), et les données sont facilement lisibles, ce qui aide au débogage. De plus, tout reste local : pas besoin de se connecter à un serveur ou d'installer une base de données.
+
+Seul bémol : chaque changement réécrit le fichier au complet, ce qui peut devenir lourd lorsqu'on a 122 480 arbres.
+
+## Limites
+
 - Le fond détaillé dépend d’OpenFreeMap et de WebGL. Un message indique une indisponibilité; les points peuvent rester sur un fond simplifié et la liste demeure accessible.
 - Le module MapLibre est volumineux; il est chargé seulement à l’ouverture de la vue Carte. L’avertissement de taille Vite n’empêche pas le build.
 - Pas de contrôle géographique limité à Montréal : seules les bornes mondiales des coordonnées sont vérifiées.
-- Le backend Rust reste celui de démarrage Tauri. Les règles métier Rust et la persistance appartiennent au TP3.
-- Choix envisagé au TP3, à confirmer : fichier JSON dans le répertoire de données de l’application, adapté à la petite collection et ne nécessitant pas de serveur. Prévoir une écriture atomique et la gestion des erreurs.
-
-## Remise — actions de l’équipe
-
-Le travail préparé ici est local. Aucun commit, tag, push ou dépôt Teams n’est effectué automatiquement.
-
-Avant de remettre :
-
-1. Confirmer les noms complets et remplacer la répartition proposée par le travail réellement réalisé.
-2. Faire contribuer chaque membre avec son propre compte, sans fabriquer l’historique.
-3. Vérifier le parcours complet dans Tauri et stabiliser la branche principale choisie par l’équipe (le checkout analysé utilise `charles`).
-4. Réviser les changements avec `git diff`, puis créer le commit de remise.
-5. Créer l’étiquette annotée `tp2` sur ce commit et publier la branche ainsi que l’étiquette lorsque l’équipe autorise la publication.
-6. Inscrire sur Teams : nom d’équipe, noms complets, URL du dépôt, étiquette `tp2` et SHA correspondant.
-
-Ne pas étiqueter le commit précédent tant que les changements locaux ne sont pas commités.
+- Chaque recherche envoie 122 480 arbres de JavaScript à Rust, ce qui rend la saisie dans la barre de recherche lente.
+- La page Carte utilise encore la recherche en JavaScript. Seulement la page Liste et la page Favoris utilisent la recherche en Rust.
