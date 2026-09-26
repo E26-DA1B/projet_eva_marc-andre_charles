@@ -14,11 +14,26 @@ import {
 } from "../services/rechercheArbres.js";
 const props = defineProps({ favorisSeulement: Boolean });
 const collection = computed(() =>
-  props.favorisSeulement ?
-    arbresService.obtenirFavoris()
-  : arbresService.etat.arbres,
+  props.favorisSeulement
+    ? arbresService.obtenirFavoris()
+    : arbresService.etat.arbres,
 );
 const recherche = ref("");
+const resultatsRecherche = ref([]);
+async function charger() {
+  resultatsRecherche.value = await arbresService.rechercher(
+    collection.value,
+    recherche.value,
+  );
+}
+let minuterie = null;
+
+function surFrappe() {
+  clearTimeout(minuterie);
+  minuterie = setTimeout(charger, 300);
+}
+watch(collection, charger, { immediate: true });
+watch(recherche, surFrappe);
 const arrondissement = ref("");
 const diametreMin = ref("");
 const diametreMax = ref("");
@@ -38,18 +53,20 @@ const arrondissements = computed(() =>
 const resultats = computed(() =>
   trierArbres(
     filtrerParDiametre(
-      filtrerParArrondissement(
-        rechercherParEspece(collection.value, recherche.value),
-        arrondissement.value,
-      ),
+      filtrerParArrondissement(resultatsRecherche.value, arrondissement.value),
       diametreMin.value,
       diametreMax.value,
     ),
     tri.value,
   ),
 );
+const especesUniques = computed(() =>
+  [...new Set(collection.value.map((arbre) => arbre.essenceFr))].map(
+    (espece) => ({ essenceFr: espece }),
+  ),
+);
 const suggestionsEspeces = computed(() =>
-  obtenirSuggestionsEspeces(collection.value, recherche.value),
+  obtenirSuggestionsEspeces(especesUniques.value, recherche.value),
 );
 const pages = computed(() =>
   Math.max(1, Math.ceil(resultats.value.length / taillePage)),
@@ -99,7 +116,10 @@ async function supprimer() {
     await nextTick();
     titre.value.focus();
   } catch (erreur) {
-    notifier(obtenirMessageErreur(erreur, "Impossible de supprimer cet arbre."), "error");
+    notifier(
+      obtenirMessageErreur(erreur, "Impossible de supprimer cet arbre."),
+      "error",
+    );
     annuler();
   }
 }
@@ -219,17 +239,17 @@ async function supprimer() {
                   arbre.essenceLatin || "Nom latin non renseigné"
                 }}</small
                 ><small>{{
-                  arbre.numeroInventaire === null ?
-                    "Ajout de cette session"
-                  : "Inventaire " + arbre.numeroInventaire
+                  arbre.numeroInventaire === null
+                    ? "Ajout de cette session"
+                    : "Inventaire " + arbre.numeroInventaire
                 }}</small>
               </td>
               <td>{{ arbre.arrondissement }}</td>
               <td>
                 {{
-                  arbre.diametre === null ?
-                    "Non renseigné"
-                  : arbre.diametre + " cm"
+                  arbre.diametre === null
+                    ? "Non renseigné"
+                    : arbre.diametre + " cm"
                 }}
               </td>
               <td>

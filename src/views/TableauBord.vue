@@ -1,6 +1,12 @@
 <script setup>
 import { arbresService } from "../services/arbresService";
 import ResumeArbres from "../components/ResumeArbres.vue";
+import { watch, ref } from "vue";
+const statistiques = ref(null);
+async function charger() {
+  statistiques.value = await arbresService.obtenirStatistiques();
+}
+watch(() => arbresService.etat.arbres, charger, { immediate: true });
 </script>
 <template>
   <section>
@@ -15,7 +21,10 @@ import ResumeArbres from "../components/ResumeArbres.vue";
       Consultez l’échantillon, trouvez une essence et enrichissez votre
       collection de démonstration.
     </p>
-    <ResumeArbres :arbres="arbresService.etat.arbres" />
+    <ResumeArbres
+      :arbres="arbresService.etat.arbres"
+      :statistiques="statistiques"
+    />
     <div class="cartes-accueil">
       <article class="panneau">
         <span class="icone" aria-hidden="true">⌖</span>

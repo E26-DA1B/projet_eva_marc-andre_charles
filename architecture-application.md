@@ -2,9 +2,9 @@
 
 ## Besoin et données principales
 
-Explorer les arbres publics de Montréal et gérer une petite collection temporaire. Un arbre contient un identifiant interne, un numéro d’inventaire municipal facultatif, une essence française, un nom latin facultatif, un arrondissement, un diamètre en cm et une position longitude/latitude.
+Explorer les arbres publics de Montréal et gérer une collection avec persistance. Un arbre contient un identifiant interne, un numéro d’inventaire municipal facultatif, une essence française, un nom latin facultatif, un arrondissement, un diamètre en cm et une position longitude/latitude.
 
-Ce document décrit l’implémentation TP2 actuelle et propose la suite TP3. Aucun document d’architecture initial n’était présent dans le checkout analysé; ce fichier ne prétend pas reconstituer le défi déjà remis.
+Ce document décrit d'abord l'implémentation TP2, puis l'implémentation proposée du TP3, et enfin l'implémentation réelle du TP3.
 
 ## Implémentation TP2
 
@@ -69,8 +69,50 @@ Champs obligatoires non blancs; textes de 120 caractères maximum; diamètre de 
 Rust devra protéger les limites des données et l’existence des arbres, et calculer le résumé. Les appels `invoke()` resteront centralisés dans le service JavaScript. Les méthodes de mutation deviendront asynchrones et mettront à jour la collection après confirmation de Rust.
 
 La persistance JSON est proposée pour conserver une portée raisonnable, mais n’est pas implémentée au TP2. Le TP3 devra documenter les modules et commandes réellement retenus, la persistance finale et les différences par rapport à cette proposition.
+
 ## Choix final : JSON
 
 La collection est persistée localement dans `arbres.json`, placé dans le dossier de données de Tauri. `lib.rs` prépare ce chemin au démarrage; `repository.rs` lit et réécrit le JSON; `commands.rs` expose les opérations à Vue par `invoke()`.
 
 Au premier démarrage, Vue charge `public/data/liste_arbre.csv` puis l’importe dans JSON. Les démarrages suivants relisent directement `arbres.json`. Les opérations d’ajout, modification et suppression sont asynchrones et confirmées par Rust avant la mise à jour de l’état Vue.
+
+## Implémentation réelle du TP3
+
+### Modules Rust
+
+| Module            | Responsabilité                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| `main.rs`         | Point d’entrée; appelle `run()`                                                                            |
+| `lib.rs`          | Déclare les modules, crée `AppState` (chemins des trois fichiers JSON et verrou), enregistre les commandes |
+| `commands.rs`     | Commandes Tauri appelées par Vue avec `invoke()`; erreurs retournées avec `Result`                         |
+| `models.rs`       | Structure `Arbre`, sérialisée avec Serde (`camelCase` côté JavaScript)                                     |
+| `validation.rs`   | Règles de validation indépendantes de Vue, avec tests unitaires                                            |
+| `repository.rs`   | Lecture et écriture de `arbres.json`, `favoris.json` et `observations.json`                                |
+| `recherche.rs`    | Normalisation du texte (casse et accents) et recherche par essence                                         |
+| `statistiques.rs` | Calcul du résumé : total, essences, arrondissements et diamètre moyen                                      |
+
+### Commandes Tauri
+
+| Commande                  | Rôle                                                                |
+| ------------------------- | ------------------------------------------------------------------- |
+| `lister_arbres`           | Retourne tous les arbres de `arbres.json`                           |
+| `importer_arbres`         | Au premier démarrage, sauvegarde les arbres lus dans le CSV         |
+| `ajouter_arbre`           | Valide et ajoute un arbre                                           |
+| `modifier_arbre`          | Valide et modifie un arbre existant                                 |
+| `supprimer_arbre`         | Supprime un arbre existant                                          |
+| `lister_favoris`          | Retourne les identifiants des favoris                               |
+| `ajouter_favori`          | Ajoute un favori sans doublon                                       |
+| `retirer_favori`          | Retire un favori sans supprimer l’arbre                             |
+| `lister_observations`     | Retourne les observations enregistrées                              |
+| `sauvegarder_observation` | Enregistre l’observation d’un arbre                                 |
+| `rechercher_arbres`       | Recherche les arbres dans `arbres.json`, et retourne les id trouvés |
+| `obtenir_statistiques`    | Calcule le résumé de la collection; utilisée par le tableau de bord |
+
+### Différences par rapport à la proposition
+
+- **Nouveaux modules :** `recherche.rs` et `statistiques.rs` ne faisaient pas partie de la proposition.
+- **Persistance élargie :** en plus des arbres, les favoris et les observations ont chacun leur fichier JSON.
+- **Recherche :** effectuée en Rust dans les pages Liste et Favoris; la page Carte utilise encore la recherche JavaScript.
+- **Statistiques :** calculées en Rust pour le tableau de bord; les résumés filtrés des pages Liste et Carte sont encore calculés en JavaScript.
+- **Écriture non atomique :** la proposition prévoyait une écriture atomique, mais `repository.rs` écrit directement avec `fs::write`.
+- **Conforme à la proposition :** `models.rs` utilise des champs privés, un constructeur et des accesseurs.
