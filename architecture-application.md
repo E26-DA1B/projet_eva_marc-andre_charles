@@ -93,17 +93,26 @@ Au premier démarrage, Vue charge `public/data/liste_arbre.csv` puis l’importe
 
 ### Commandes Tauri
 
-| Commande                  | Rôle                                                                         |
-| ------------------------- | ---------------------------------------------------------------------------- |
-| `lister_arbres`           | Retourne tous les arbres de `arbres.json`                                    |
-| `importer_arbres`         | Au premier démarrage, sauvegarde les arbres lus dans le CSV                  |
-| `ajouter_arbre`           | Valide et ajoute un arbre                                                    |
-| `modifier_arbre`          | Valide et modifie un arbre existant                                          |
-| `supprimer_arbre`         | Supprime un arbre existant                                                   |
-| `lister_favoris`          | Retourne les identifiants des favoris                                        |
-| `ajouter_favori`          | Ajoute un favori sans doublon                                                |
-| `retirer_favori`          | Retire un favori sans supprimer l’arbre                                      |
-| `lister_observations`     | Retourne les observations enregistrées                                       |
-| `sauvegarder_observation` | Enregistre l’observation d’un arbre                                          |
-| `rechercher_arbres`       | Recherche par essence, sans distinction de casse ni d’accents                |
-| `obtenir_statistiques`    | Calcule le résumé de la collection; enregistrée, pas encore utilisée par Vue |
+| Commande                  | Rôle                                                                |
+| ------------------------- | ------------------------------------------------------------------- |
+| `lister_arbres`           | Retourne tous les arbres de `arbres.json`                           |
+| `importer_arbres`         | Au premier démarrage, sauvegarde les arbres lus dans le CSV         |
+| `ajouter_arbre`           | Valide et ajoute un arbre                                           |
+| `modifier_arbre`          | Valide et modifie un arbre existant                                 |
+| `supprimer_arbre`         | Supprime un arbre existant                                          |
+| `lister_favoris`          | Retourne les identifiants des favoris                               |
+| `ajouter_favori`          | Ajoute un favori sans doublon                                       |
+| `retirer_favori`          | Retire un favori sans supprimer l’arbre                             |
+| `lister_observations`     | Retourne les observations enregistrées                              |
+| `sauvegarder_observation` | Enregistre l’observation d’un arbre                                 |
+| `rechercher_arbres`       | Recherche par essence, sans distinction de casse ni d’accents       |
+| `obtenir_statistiques`    | Calcule le résumé de la collection; utilisée par le tableau de bord |
+
+### Différences par rapport à la proposition
+
+- **Nouveaux modules :** `recherche.rs` et `statistiques.rs` ne faisaient pas partie de la proposition.
+- **Persistance élargie :** en plus des arbres, les favoris et les observations ont chacun leur fichier JSON.
+- **Recherche :** effectuée en Rust dans les pages Liste et Favoris; la page Carte utilise encore la recherche JavaScript.
+- **Statistiques :** calculées en Rust pour le tableau de bord; les résumés filtrés des pages Liste et Carte sont encore calculés en JavaScript.
+- **Écriture non atomique :** la proposition prévoyait une écriture atomique, mais `repository.rs` écrit directement avec `fs::write`.
+- **Conforme à la proposition :** `models.rs` utilise des champs privés, un constructeur et des accesseurs.
