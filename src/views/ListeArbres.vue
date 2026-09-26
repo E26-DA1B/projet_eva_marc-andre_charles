@@ -26,7 +26,7 @@ async function charger() {
     recherche.value,
   );
 }
-watch(recherche, charger, { immediate: true });
+watch([recherche, collection], charger, { immediate: true });
 const arrondissement = ref("");
 const diametreMin = ref("");
 const diametreMax = ref("");
