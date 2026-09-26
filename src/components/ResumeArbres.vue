@@ -1,8 +1,13 @@
 <script setup>
 import { computed } from "vue";
 import { calculerResume } from "../services/statistiquesService.js";
-const props = defineProps({ arbres: { type: Array, required: true } });
-const resume = computed(() => calculerResume(props.arbres));
+const props = defineProps({
+  arbres: { type: Array, required: true },
+  statistiques: { type: Object, default: null },
+});
+const resume = computed(() =>
+  props.statistiques ? props.statistiques : calculerResume(props.arbres),
+);
 </script>
 <template>
   <dl class="statistiques">
