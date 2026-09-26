@@ -69,17 +69,19 @@ Validation du formulaire :
 ## Vérifications
 
 ```bash
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo check --manifest-path src-tauri/Cargo.toml
+cargo test --manifest-path src-tauri/Cargo.toml
 npm test
 npm run build
-cargo check --manifest-path src-tauri/Cargo.toml
 npm run tauri dev
 ```
 
-Les tests Node couvrent le fichier livré, les erreurs de CSV, la validation, les mutations, la nouvelle tentative de chargement, les filtres et les calculs. Voir `docs/validation-tp2.md` pour le parcours manuel et les preuves locales.
+Les tests Node couvrent le fichier livré, les erreurs de CSV, la validation, les mutations, la nouvelle tentative de chargement, les filtres et les calculs. Les tests Rust vérifient les règles de validation du backend (validation.rs).
 
 ## Architecture
 
-Voir [architecture-application.md](architecture-application.md) pour les vues, les données, le contrat du service et les responsabilités Rust envisagées au TP3.
+Voir [architecture-application.md](architecture-application.md) pour les vues, les données, le contrat du service et les modules Rust.
 
 ## Persistance
 
