@@ -216,11 +216,10 @@ export function creerServiceArbres(charger = chargerArbres) {
     }
 
     const resultats = await invoke("rechercher_arbres", {
-      arbres: arbres.map(versRust),
       recherche,
     });
 
-    const ids = new Set(resultats.map((arbre) => arbre.id));
+    const ids = new Set(resultats);
     return arbres.filter((arbre) => ids.has(String(arbre.id)));
   }
   async function obtenirStatistiques() {

@@ -14,12 +14,18 @@ pub struct AppState {
     pub verrou: Mutex<()>,
 }
 
-#[tauri::command]
-pub fn rechercher_arbres(arbres: Vec<Arbre>, recherche: String) -> Vec<Arbre> {
-    recherche::rechercher_par_espece(&arbres, &recherche)
-        .into_iter()
-        .cloned()
-        .collect()
+#[tauri::command(async)]
+pub fn rechercher_arbres(
+    recherche: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, String> {
+    let _verrou = state.verrou.lock().map_err(|e| e.to_string())?;
+    let arbres = repository::charger_arbres(&state.chemin)?;
+    let arbres_trouves = recherche::rechercher_par_espece(&arbres, &recherche);
+    Ok(arbres_trouves
+        .iter()
+        .map(|arbre| arbre.id().to_string())
+        .collect())
 }
 
 #[tauri::command]

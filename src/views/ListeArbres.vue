@@ -60,8 +60,13 @@ const resultats = computed(() =>
     tri.value,
   ),
 );
+const especesUniques = computed(() =>
+  [...new Set(collection.value.map((arbre) => arbre.essenceFr))].map(
+    (espece) => ({ essenceFr: espece }),
+  ),
+);
 const suggestionsEspeces = computed(() =>
-  obtenirSuggestionsEspeces(collection.value, recherche.value),
+  obtenirSuggestionsEspeces(especesUniques.value, recherche.value),
 );
 const pages = computed(() =>
   Math.max(1, Math.ceil(resultats.value.length / taillePage)),
