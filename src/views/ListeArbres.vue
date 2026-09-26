@@ -26,7 +26,14 @@ async function charger() {
     recherche.value,
   );
 }
-watch([recherche, collection], charger, { immediate: true });
+let minuterie = null;
+
+function surFrappe() {
+  clearTimeout(minuterie);
+  minuterie = setTimeout(charger, 300);
+}
+watch(collection, charger, { immediate: true });
+watch(recherche, surFrappe);
 const arrondissement = ref("");
 const diametreMin = ref("");
 const diametreMax = ref("");
