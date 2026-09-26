@@ -1,4 +1,9 @@
-use crate::{models::Arbre, repository, validation, recherche, statistiques::{calculer_statistiques, Statistiques}};
+use crate::{
+    models::Arbre,
+    recherche, repository,
+    statistiques::{calculer_statistiques, Statistiques},
+    validation,
+};
 use std::{path::PathBuf, sync::Mutex};
 use tauri::State;
 
@@ -16,7 +21,6 @@ pub fn rechercher_arbres(arbres: Vec<Arbre>, recherche: String) -> Vec<Arbre> {
         .cloned()
         .collect()
 }
-
 
 #[tauri::command]
 pub fn lister_arbres(state: State<'_, AppState>) -> Result<Vec<Arbre>, String> {

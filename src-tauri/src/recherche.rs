@@ -1,10 +1,12 @@
-use unicode_normalization::UnicodeNormalization;
 use crate::models::Arbre;
-
-
+use unicode_normalization::UnicodeNormalization;
 
 fn normaliser(texte: &str) -> String {
-    texte.to_lowercase().nfd().filter(|c| !('\u{0300}'..='\u{036F}').contains(c)).collect::<String>()
+    texte
+        .to_lowercase()
+        .nfd()
+        .filter(|c| !('\u{0300}'..='\u{036F}').contains(c))
+        .collect::<String>()
 }
 
 pub(crate) fn rechercher_par_espece<'a>(arbres: &'a [Arbre], recherche: &str) -> Vec<&'a Arbre> {
@@ -14,9 +16,12 @@ pub(crate) fn rechercher_par_espece<'a>(arbres: &'a [Arbre], recherche: &str) ->
         return arbres.iter().collect();
     }
 
-    arbres.iter().filter(|arbre| {
-        let espece = normaliser(arbre.essence_fr());
+    arbres
+        .iter()
+        .filter(|arbre| {
+            let espece = normaliser(arbre.essence_fr());
 
-        espece.contains(texte_recherche.as_str())
-    }).collect()
+            espece.contains(texte_recherche.as_str())
+        })
+        .collect()
 }

@@ -5,8 +5,8 @@ pub mod validation;
 use tauri::Manager;
 
 mod commands;
-mod repository;
 mod recherche;
+mod repository;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
