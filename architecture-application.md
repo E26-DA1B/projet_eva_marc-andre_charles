@@ -105,7 +105,7 @@ Au premier démarrage, Vue charge `public/data/liste_arbre.csv` puis l’importe
 | `retirer_favori`          | Retire un favori sans supprimer l’arbre                             |
 | `lister_observations`     | Retourne les observations enregistrées                              |
 | `sauvegarder_observation` | Enregistre l’observation d’un arbre                                 |
-| `rechercher_arbres`       | Recherche par essence, sans distinction de casse ni d’accents       |
+| `rechercher_arbres`       | Recherche les arbres dans `arbres.json`, et retourne les id trouvés |
 | `obtenir_statistiques`    | Calcule le résumé de la collection; utilisée par le tableau de bord |
 
 ### Différences par rapport à la proposition

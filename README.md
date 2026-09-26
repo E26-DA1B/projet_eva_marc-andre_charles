@@ -4,7 +4,7 @@ Application de bureau pour explorer un échantillon d’arbres publics de Montr�
 
 ## Équipe et dépôt
 
-- Eva Bessette : recherche en Rust, commande obtenir_statistiques, vérifications avant la remise (formatage Rust, compilation, build), mise à jour du README.
+- Eva Bessette : recherche en Rust, commande obtenir_statistiques, délai avant la recherche, suggestions plus rapides, vérifications avant la remise (formatage Rust, compilation, build), mise à jour du README.
 - Marc-André Dufour : backend Tauri, commands.rs, persistance JSON, favoris, observations, gestion des erreurs, pages Vue (formulaire, tableau de bord, liste des arbres, favoris).
 - Charles Legault : carte; import CSV; rechercher, filtrer, trier, et suggestions en Javascript; fichiers models.rs, validation.rs, statistiques.rs; amélioration des pages Vue (formulaire, tableau de bord, liste des arbres, favoris).
 - Dépôt du cours : https://github.com/E26-DA1B/projet_eva_marc-andre_charles
@@ -94,5 +94,5 @@ Seul bémol : chaque changement réécrit le fichier au complet, ce qui peut dev
 - Le fond détaillé dépend d’OpenFreeMap et de WebGL. Un message indique une indisponibilité; les points peuvent rester sur un fond simplifié et la liste demeure accessible.
 - Le module MapLibre est volumineux; il est chargé seulement à l’ouverture de la vue Carte. L’avertissement de taille Vite n’empêche pas le build.
 - Pas de contrôle géographique limité à Montréal : seules les bornes mondiales des coordonnées sont vérifiées.
-- Chaque recherche envoie 122 480 arbres de JavaScript à Rust, ce qui rend la saisie dans la barre de recherche lente.
 - La page Carte utilise encore la recherche en JavaScript. Seulement la page Liste et la page Favoris utilisent la recherche en Rust.
+- La recherche prend environ une seconde, parce que Rust relit et analyse arbres.json à chaque recherche.
