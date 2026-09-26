@@ -14,11 +14,19 @@ import {
 } from "../services/rechercheArbres.js";
 const props = defineProps({ favorisSeulement: Boolean });
 const collection = computed(() =>
-  props.favorisSeulement ?
-    arbresService.obtenirFavoris()
-  : arbresService.etat.arbres,
+  props.favorisSeulement
+    ? arbresService.obtenirFavoris()
+    : arbresService.etat.arbres,
 );
 const recherche = ref("");
+const resultatsRecherche = ref([]);
+async function charger() {
+  resultatsRecherche.value = await arbresService.rechercher(
+    collection.value,
+    recherche.value,
+  );
+}
+watch(recherche, charger, { immediate: true });
 const arrondissement = ref("");
 const diametreMin = ref("");
 const diametreMax = ref("");
@@ -38,10 +46,7 @@ const arrondissements = computed(() =>
 const resultats = computed(() =>
   trierArbres(
     filtrerParDiametre(
-      filtrerParArrondissement(
-        rechercherParEspece(collection.value, recherche.value),
-        arrondissement.value,
-      ),
+      filtrerParArrondissement(resultatsRecherche.value, arrondissement.value),
       diametreMin.value,
       diametreMax.value,
     ),
@@ -99,7 +104,10 @@ async function supprimer() {
     await nextTick();
     titre.value.focus();
   } catch (erreur) {
-    notifier(obtenirMessageErreur(erreur, "Impossible de supprimer cet arbre."), "error");
+    notifier(
+      obtenirMessageErreur(erreur, "Impossible de supprimer cet arbre."),
+      "error",
+    );
     annuler();
   }
 }
@@ -219,17 +227,17 @@ async function supprimer() {
                   arbre.essenceLatin || "Nom latin non renseigné"
                 }}</small
                 ><small>{{
-                  arbre.numeroInventaire === null ?
-                    "Ajout de cette session"
-                  : "Inventaire " + arbre.numeroInventaire
+                  arbre.numeroInventaire === null
+                    ? "Ajout de cette session"
+                    : "Inventaire " + arbre.numeroInventaire
                 }}</small>
               </td>
               <td>{{ arbre.arrondissement }}</td>
               <td>
                 {{
-                  arbre.diametre === null ?
-                    "Non renseigné"
-                  : arbre.diametre + " cm"
+                  arbre.diametre === null
+                    ? "Non renseigné"
+                    : arbre.diametre + " cm"
                 }}
               </td>
               <td>
